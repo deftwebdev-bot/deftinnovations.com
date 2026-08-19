@@ -1,0 +1,35 @@
+<svg width="200" height="52" viewBox="0 0 200 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- D -->
+  <path d="M8 8H20C27.732 8 34 14.268 34 22C34 29.732 27.732 36 20 36H8V8Z" fill="#FFFFFF"/>
+  <path d="M14 15H20C23.866 15 27 18.134 27 22C27 25.866 23.866 29 20 29H14V15Z" fill="#1a1a1a"/>
+  <rect x="8" y="8" width="5" height="28" fill="#FFFFFF"/>
+
+  <!-- E - stylized with cutout -->
+  <rect x="38" y="8" width="5" height="28" fill="#FFFFFF"/>
+  <rect x="38" y="8" width="18" height="5" fill="#FFFFFF"/>
+  <rect x="38" y="19.5" width="13" height="4.5" fill="#FFFFFF"/>
+  <rect x="38" y="31" width="18" height="5" fill="#FFFFFF"/>
+  <!-- cutout triangle in E -->
+  <polygon points="38,8 50,8 38,20" fill="#1a1a1a"/>
+
+  <!-- f -->
+  <rect x="62" y="8" width="5" height="28" fill="#FFFFFF"/>
+  <rect x="62" y="8" width="12" height="4.5" fill="#FFFFFF"/>
+  <rect x="62" y="19" width="10" height="4" fill="#FFFFFF"/>
+  <path d="M67 8 Q74 8 74 14" stroke="#FFFFFF" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+  <!-- t -->
+  <rect x="82" y="12" width="5" height="24" fill="#FFFFFF"/>
+  <rect x="78" y="12" width="13" height="4.5" fill="#FFFFFF"/>
+
+  <!-- Innovations text -->
+  <text
+    x="8"
+    y="49"
+    fill="#aaaaaa"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    font-size="10"
+    font-weight="300"
+    letter-spacing="3"
+  >INNOVATIONS</text>
+</svg>

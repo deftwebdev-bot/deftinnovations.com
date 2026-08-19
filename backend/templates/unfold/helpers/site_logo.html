@@ -1,0 +1,11 @@
+{% load i18n %}
+
+<a href="{% url "admin:index" %}" class="flex items-center">
+    {% if site_logo.light and site_logo.dark %}
+        <img src="{{ site_logo.dark }}" alt="{% trans 'Home' %}" class="h-12 max-h-[50px] max-w-[185px] w-auto object-contain hidden mr-3 dark:block"/>
+
+        <img src="{{ site_logo.light }}" alt="{% trans 'Home' %}" class="block h-12 max-h-[50px] max-w-[185px] w-auto object-contain mr-3 dark:hidden" />
+    {% else %}
+        <img src="{{ site_logo }}" class="h-12 max-h-[50px] max-w-[185px] w-auto object-contain mr-3" alt="{% trans 'Home' %}" />
+    {% endif %}
+</a>

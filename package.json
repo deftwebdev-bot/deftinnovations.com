@@ -1,26 +1,14 @@
 {
-  "name": "deftinnovations.com",
-  "version": "0.1.0",
+  "name": "deftinnovations-workspace",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "next": "16.3.0",
-    "react": "19.2.8",
-    "react-dom": "19.2.8"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.3.0",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "start": "npm --prefix frontend run start",
+    "lint": "npm --prefix frontend run lint",
+    "backend:dev": "cd backend && ./.venv/bin/python manage.py runserver 0.0.0.0:8000",
+    "backend:migrate": "cd backend && ./.venv/bin/python manage.py migrate",
+    "backend:seed": "cd backend && ./.venv/bin/python seed.py"
   }
 }

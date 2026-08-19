@@ -1,0 +1,149 @@
+{% extends "admin/index.html" %}
+{% load i18n static %}
+
+{% block content %}
+<div style="padding: 24px; display: flex; flex-direction: column; gap: 24px;">
+
+    <!-- Welcome Header -->
+    <div style="display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid #f0f0f0; border-radius: 16px; padding: 20px 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);">
+        <div>
+            <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #111; letter-spacing: -0.4px;">Deft Innovations — Dashboard</h1>
+            <p style="margin: 4px 0 0; font-size: 13px; color: #888;">Real-time stats, content updates, and incoming inquiries.</p>
+        </div>
+        <span style="font-size: 11px; font-family: monospace; background: #f4f4f4; color: #555; padding: 6px 14px; border-radius: 999px; font-weight: 600;">
+            {% now "N j, Y — P" %}
+        </span>
+    </div>
+
+    <!-- Stats Grid -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+
+        <!-- Total Leads -->
+        <a href="/admin/leads/contactlead/" style="text-decoration: none; display: block; background: #fff; border: 1px solid #f0f0f0; border-radius: 16px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); transition: box-shadow 0.2s;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #aaa;">Total Leads</span>
+                <span style="font-size: 28px; font-weight: 900; color: #111; font-family: monospace; line-height: 1;">{{ total_leads }}</span>
+            </div>
+            <div style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between;">
+                <span style="font-size: 12px; color: #777;">View Contact Messages</span>
+                <span style="font-size: 16px; color: #555; font-weight: bold;">→</span>
+            </div>
+        </a>
+
+        <!-- Job Applications -->
+        <a href="/admin/careers/jobapplication/" style="text-decoration: none; display: block; background: #fff; border: 1px solid #f0f0f0; border-radius: 16px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #aaa;">Applications</span>
+                <div style="text-align: right;">
+                    <span style="font-size: 28px; font-weight: 900; color: #111; font-family: monospace; line-height: 1; display: block;">{{ total_applications }}</span>
+                    {% if new_applications > 0 %}
+                    <span style="display: inline-block; margin-top: 4px; padding: 2px 8px; border-radius: 999px; background: #fff3e0; color: #e65100; font-size: 10px; font-weight: 700;">
+                        {{ new_applications }} New
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            <div style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between;">
+                <span style="font-size: 12px; color: #777;">View Candidate Pipeline</span>
+                <span style="font-size: 16px; color: #555; font-weight: bold;">→</span>
+            </div>
+        </a>
+
+        <!-- Active Positions -->
+        <a href="/admin/careers/jobposition/" style="text-decoration: none; display: block; background: #fff; border: 1px solid #f0f0f0; border-radius: 16px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #aaa;">Active Positions</span>
+                <span style="font-size: 28px; font-weight: 900; color: #111; font-family: monospace; line-height: 1;">{{ active_positions }}</span>
+            </div>
+            <div style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between;">
+                <span style="font-size: 12px; color: #777;">Manage Careers</span>
+                <span style="font-size: 16px; color: #555; font-weight: bold;">→</span>
+            </div>
+        </a>
+
+        <!-- Published Content -->
+        <div style="background: #fff; border: 1px solid #f0f0f0; border-radius: 16px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
+            <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #aaa;">Published Content</span>
+            <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 18px; font-weight: 800; color: #111; font-family: monospace;">{{ total_articles }} <span style="font-size: 12px; font-weight: 500; color: #888; font-family: sans-serif;">Articles</span></span>
+                <span style="font-size: 18px; font-weight: 800; color: #111; font-family: monospace;">{{ total_projects }} <span style="font-size: 12px; font-weight: 500; color: #888; font-family: sans-serif;">Projects</span></span>
+            </div>
+            <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #f4f4f4; display: flex; gap: 12px;">
+                <a href="/admin/blog/article/" style="font-size: 11px; color: #4f46e5; text-decoration: none; font-weight: 600;">Blog</a>
+                <span style="color: #ddd;">|</span>
+                <a href="/admin/portfolio/project/" style="font-size: 11px; color: #4f46e5; text-decoration: none; font-weight: 600;">Portfolio</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Grid: Quick Actions + Model List -->
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px; align-items: start;">
+
+        <!-- Quick Actions -->
+        <div style="background: #fff; border: 1px solid #f0f0f0; border-radius: 16px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
+            <h2 style="margin: 0 0 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #999;">Quick Shortcuts</h2>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <a href="/admin/blog/article/add/" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 10px; background: #f9f9f9; font-size: 13px; color: #333; text-decoration: none; font-weight: 500;">
+                    Create Blog Post <span style="color: #aaa; font-weight: 700;">+</span>
+                </a>
+                <a href="/admin/portfolio/project/add/" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 10px; background: #f9f9f9; font-size: 13px; color: #333; text-decoration: none; font-weight: 500;">
+                    Add Portfolio Project <span style="color: #aaa; font-weight: 700;">+</span>
+                </a>
+                <a href="/admin/careers/jobposition/add/" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 10px; background: #f9f9f9; font-size: 13px; color: #333; text-decoration: none; font-weight: 500;">
+                    Publish Open Position <span style="color: #aaa; font-weight: 700;">+</span>
+                </a>
+                <a href="/admin/leads/contactlead/" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 10px; background: #f9f9f9; font-size: 13px; color: #333; text-decoration: none; font-weight: 500;">
+                    View Leads Inbox <span style="color: #aaa; font-weight: 700;">→</span>
+                </a>
+                <a href="/admin/company/herocontent/" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 10px; background: #f9f9f9; font-size: 13px; color: #333; text-decoration: none; font-weight: 500;">
+                    Edit Hero Banner Text <span style="color: #aaa; font-weight: 700;">✎</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Models Overview (clean links, no block.super mess) -->
+        <div style="background: #fff; border: 1px solid #f0f0f0; border-radius: 16px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
+            <h2 style="margin: 0 0 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #999;">All Sections — Quick Navigate</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <a href="/admin/blog/article/" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #f0f0f0; font-size: 12px; color: #444; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">📝</span> Articles / Blog
+                </a>
+                <a href="/admin/portfolio/project/" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #f0f0f0; font-size: 12px; color: #444; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">🗂️</span> Portfolio Projects
+                </a>
+                <a href="/admin/services/service/" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #f0f0f0; font-size: 12px; color: #444; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">⚙️</span> Services
+                </a>
+                <a href="/admin/leads/contactlead/" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #f0f0f0; font-size: 12px; color: #444; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">💬</span> Contact Leads
+                </a>
+                <a href="/admin/careers/jobposition/" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #f0f0f0; font-size: 12px; color: #444; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">💼</span> Job Positions
+                </a>
+                <a href="/admin/careers/jobapplication/" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #f0f0f0; font-size: 12px; color: #444; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">👤</span> Job Applications
+                </a>
+                <a href="/admin/company/herocontent/" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #f0f0f0; font-size: 12px; color: #444; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">🏠</span> Hero Content
+                </a>
+                <a href="/admin/company/trustedbrand/" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #f0f0f0; font-size: 12px; color: #444; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">🏢</span> Trusted Brands
+                </a>
+                <a href="/admin/company/teammember/" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #f0f0f0; font-size: 12px; color: #444; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">👥</span> Team Members
+                </a>
+                <a href="/admin/company/testimonial/" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #f0f0f0; font-size: 12px; color: #444; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">⭐</span> Testimonials
+                </a>
+                <a href="/admin/company/truststat/" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #f0f0f0; font-size: 12px; color: #444; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">📊</span> Trust Statistics
+                </a>
+                <a href="/admin/auth/user/" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #f0f0f0; font-size: 12px; color: #444; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">🔑</span> Users & Security
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
