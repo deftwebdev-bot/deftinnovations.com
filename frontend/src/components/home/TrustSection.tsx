@@ -2,8 +2,8 @@
 
 import React from "react";
 import { RevealCounter, FadeIn } from "@/components/ui/Motion";
-import { TrustedBrand, FALLBACK_BRANDS } from "@/lib/api";
-import { TRUST_STATS } from "@/data/testimonials";
+import { TrustedBrand, TrustStat } from "@/lib/api";
+
 
 interface TrustSectionProps {
   brands?: TrustedBrand[];
@@ -18,11 +18,11 @@ const MarqueeItem: React.FC<{ name: string }> = ({ name }) => (
 );
 
 export const TrustSection: React.FC<TrustSectionProps> = ({
-  brands = FALLBACK_BRANDS,
-  stats = TRUST_STATS,
+  brands = [],
+  stats = [],
 }) => {
-  const brandList = brands.length > 0 ? brands : FALLBACK_BRANDS;
-  const statList = stats.length > 0 ? stats : TRUST_STATS;
+  const brandList = brands ?? [];
+  const statList = stats ?? [];
 
   return (
     <section className="section-sm bg-[#0a0a0a] border-y border-white/[0.06]">

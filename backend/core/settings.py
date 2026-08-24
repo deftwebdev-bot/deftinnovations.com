@@ -218,6 +218,11 @@ UNFOLD = {
                         "icon": "groups",
                     },
                     {
+                        "title": "Gallery (Life at Deft)",
+                        "link": "/admin/company/culturegallery/",
+                        "icon": "photo_library",
+                    },
+                    {
                         "title": "Testimonials",
                         "link": "/admin/company/testimonial/",
                         "icon": "reviews",

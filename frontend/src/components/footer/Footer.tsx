@@ -3,14 +3,17 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { DeftLogo } from "@/components/ui/DeftLogo";
-import { ArrowUpRight, CheckCircle2 } from "lucide-react";
-import { LinkedinIcon, TwitterIcon, GithubIcon, InstagramIcon } from "@/components/ui/SocialIcons";
+import { ArrowUpRight, CheckCircle2, Mail, Phone, MapPin } from "lucide-react";
+import { LinkedinIcon, TwitterIcon, FacebookIcon, InstagramIcon } from "@/components/ui/SocialIcons";
 
 const NAV = {
   Company: [
     { name: "About Agency", href: "/about" },
+    { name: "Our Team & Life", href: "/our-team" },
     { name: "Our Services", href: "/services" },
+    { name: "Our Clients", href: "/clients" },
     { name: "Case Studies", href: "/portfolio" },
+    { name: "Testimonials", href: "/testimonials" },
     { name: "Editorial Journal", href: "/blog" },
     { name: "Careers & Hiring", href: "/careers" },
     { name: "Contact", href: "/contact" },
@@ -29,7 +32,7 @@ const SOCIALS = [
   { icon: LinkedinIcon, href: "https://linkedin.com", label: "LinkedIn" },
   { icon: TwitterIcon,  href: "https://twitter.com",  label: "Twitter / X" },
   { icon: InstagramIcon, href: "https://instagram.com", label: "Instagram" },
-  { icon: GithubIcon,   href: "https://github.com",   label: "GitHub" },
+  { icon: FacebookIcon, href: "https://facebook.com", label: "Facebook" },
 ];
 
 export const Footer = () => {
@@ -92,18 +95,39 @@ export const Footer = () => {
             </div>
           ))}
 
-          {/* Newsletter col */}
+          {/* Contact col */}
           <div className="lg:col-span-4 space-y-5">
-            <h3 className="text-label text-white/30">Growth Insights</h3>
-            <p className="text-sm text-white/45 leading-relaxed font-light">
-              Bi-weekly strategy on marketing technology, brand systems, and conversion optimization — no noise.
-            </p>
-            <form onSubmit={handleSub} className="relative">
+            <h3 className="text-label text-white/30">Get in Touch</h3>
+            <div className="space-y-3">
+              <a href="mailto:info@deftinnovations.in" className="flex items-center gap-2.5 text-sm text-white/50 hover:text-white transition-colors">
+                <Mail className="w-4 h-4 text-white/30" /> info@deftinnovations.in
+              </a>
+              <a href="mailto:hr@deftinnovations.in" className="flex items-center gap-2.5 text-sm text-white/50 hover:text-white transition-colors">
+                <Mail className="w-4 h-4 text-white/30" /> hr@deftinnovations.in
+              </a>
+              <a href="tel:+918606035050" className="flex items-center gap-2.5 text-sm text-white/50 hover:text-white transition-colors">
+                <Phone className="w-4 h-4 text-white/30" /> +91 860 603 5050
+              </a>
+              <a href="tel:+918078255277" className="flex items-center gap-2.5 text-sm text-white/50 hover:text-white transition-colors">
+                <Phone className="w-4 h-4 text-white/30" /> +91 8078 255 277
+              </a>
+            </div>
+            <div className="space-y-2 pt-2 border-t border-white/[0.06]">
+              <div className="flex items-start gap-2.5 text-xs text-white/35 font-light">
+                <MapPin className="w-3.5 h-3.5 mt-0.5 text-white/25" />
+                <span>HiLITE Business Park, NH 66, Thondayad, Kozhikode, Kerala 673014</span>
+              </div>
+              <div className="flex items-start gap-2.5 text-xs text-white/35 font-light">
+                <MapPin className="w-3.5 h-3.5 mt-0.5 text-white/25" />
+                <span>Chandakunnu, Nilambur, Kerala 679329</span>
+              </div>
+            </div>
+            <form onSubmit={handleSub} className="relative pt-3">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
+                placeholder="Subscribe to newsletter"
                 required
                 className="w-full bg-white/[0.04] border border-white/10 rounded-full py-3 pl-5 pr-14 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-white/30 transition-colors"
               />

@@ -5,51 +5,24 @@ interface DeftLogoProps {
   className?: string;
   iconOnly?: boolean;
   size?: "sm" | "md" | "lg";
+  dark?: boolean;
 }
 
-export const DeftLogo: React.FC<DeftLogoProps> = ({ className = "", iconOnly = false, size = "md" }) => {
-  const sizeClasses = {
-    sm: "h-7",
-    md: "h-9",
-    lg: "h-12"
+export const DeftLogo: React.FC<DeftLogoProps> = ({ className = "", iconOnly = false, size = "md", dark = false }) => {
+  const textSizes: Record<string, { primary: string; secondary: string }>= {
+    sm: { primary: "text-base", secondary: "text-[9px]" },
+    md: { primary: "text-xl", secondary: "text-[10px]" },
+    lg: { primary: "text-2xl", secondary: "text-xs" },
   };
 
-  const iconSizes = {
-    sm: 28,
-    md: 36,
-    lg: 48
-  };
-
-  const currentIconSize = iconSizes[size];
+  const currentText = textSizes[size] || textSizes.md;
 
   return (
-    <Link href="/" className={`inline-flex items-center gap-3 group focus:outline-none ${className}`} aria-label="Deft Innovations Homepage">
-      {/* Geometric Deft Emblem: Crisp High-Contrast Monochrome Symbol */}
-      <svg
-        width={currentIconSize}
-        height={currentIconSize}
-        viewBox="0 0 40 40"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="transition-transform duration-300 group-hover:scale-105"
-      >
-        <rect width="40" height="40" rx="8" fill="#2D2D2D" />
-        <path
-          d="M11 10H22C27.5228 10 32 14.4772 32 20C32 25.5228 27.5228 30 22 30H11V10Z"
-          fill="#FFFFFF"
-        />
-        <path
-          d="M17 16H21C23.2091 16 25 17.7909 25 20C25 22.2091 23.2091 24 21 24H17V16Z"
-          fill="#2D2D2D"
-        />
-        <rect x="11" y="10" width="3" height="20" fill="#FFFFFF" />
-      </svg>
-
+    <Link href="/" className={`inline-flex items-center group focus:outline-none ${className}`} aria-label="Deft Innovations Homepage">
       {!iconOnly && (
-        <div className="flex flex-col">
-          <span className="text-white font-bold tracking-tight text-lg leading-tight uppercase group-hover:text-white/90 transition-colors">
-            DEFT <span className="font-light tracking-widest text-white/70 text-xs block font-mono uppercase">INNOVATIONS</span>
-          </span>
+        <div className="flex flex-col leading-none">
+          <span className={`${dark ? "text-[#0a0a0a]" : "text-white"} font-extrabold tracking-[-0.03em] ${currentText.primary} ${dark ? "group-hover:text-black/80" : "group-hover:text-white/90"} transition-colors`}>Deft</span>
+          <span className={`${dark ? "text-black/40" : "text-white/50"} font-mono tracking-[0.2em] uppercase ${currentText.secondary} ${dark ? "group-hover:text-black/30" : "group-hover:text-white/40"} transition-colors mt-0.5`}>Innovations</span>
         </div>
       )}
     </Link>

@@ -1,4 +1,4 @@
-from typing import Optional, Dict, List
+from typing import Optional
 from pydantic import BaseModel
 
 class HeroContentOut(BaseModel):
@@ -19,8 +19,10 @@ class HeroContentOut(BaseModel):
         img = ""
         if hasattr(instance, "photo") and instance.photo and hasattr(instance.photo, "url"):
             img = instance.photo.url
-        elif hasattr(instance, "hero_image_url") and instance.hero_image_url:
-            img = instance.hero_image_url
+
+        video = None
+        if hasattr(instance, "video_file") and instance.video_file and hasattr(instance.video_file, "url"):
+            video = instance.video_file.url
 
         return cls(
             id=instance.id if hasattr(instance, "id") else 1,
@@ -32,15 +34,17 @@ class HeroContentOut(BaseModel):
             primaryCtaLink=instance.primary_cta_link,
             secondaryCtaText=instance.secondary_cta_text,
             secondaryCtaLink=instance.secondary_cta_link,
-            videoUrl=getattr(instance, "video_url", None) or None,
+            videoUrl=video,
             heroImageUrl=img,
         )
 
 class TrustedBrandOut(BaseModel):
     id: int
     name: str
+    industry: str = ""
     logoUrl: Optional[str] = None
     websiteUrl: Optional[str] = None
+    isFeatured: bool = False
 
     @classmethod
     def from_model(cls, instance):
@@ -53,8 +57,10 @@ class TrustedBrandOut(BaseModel):
         return cls(
             id=instance.id,
             name=instance.name,
+            industry=instance.industry or "",
             logoUrl=logo_path or None,
             websiteUrl=instance.website_url or None,
+            isFeatured=instance.is_featured,
         )
 
 class TeamMemberOut(BaseModel):
@@ -62,6 +68,7 @@ class TeamMemberOut(BaseModel):
     name: str
     role: str
     imageUrl: str
+    order: int = 0
 
     @classmethod
     def from_model(cls, instance):
@@ -74,6 +81,24 @@ class TeamMemberOut(BaseModel):
             name=instance.name,
             role=instance.role,
             imageUrl=img,
+            order=instance.order or 0,
+        )
+
+class CultureGalleryOut(BaseModel):
+    id: str
+    imageUrl: str
+    order: int = 0
+
+    @classmethod
+    def from_model(cls, instance):
+        img = ""
+        if instance.photo and hasattr(instance.photo, "url"):
+            img = instance.photo.url
+
+        return cls(
+            id=f"gal-{instance.id}",
+            imageUrl=img,
+            order=instance.order or 0,
         )
 
 class TestimonialOut(BaseModel):

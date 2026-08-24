@@ -6,8 +6,8 @@ import { Navbar } from "@/components/navbar/Navbar";
 import { Footer } from "@/components/footer/Footer";
 import { getArticleBySlug, getArticles, getMediaUrl } from "@/lib/api";
 import { CtaSection } from "@/components/home/CtaSection";
-import { FadeIn, ImageReveal } from "@/components/ui/Motion";
-import { ArrowLeft, Clock, Share2 } from "lucide-react";
+import { FadeIn, LineReveal, ImageReveal } from "@/components/ui/Motion";
+import { ArrowRight, Clock, Share2 } from "lucide-react";
 import type { Metadata } from "next";
 
 export const dynamicParams = true;
@@ -35,66 +35,97 @@ export default async function ArticlePage({ params }: Props) {
   const related = allArticles.filter((a) => a.slug !== slug).slice(0, 2);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-white text-[#0a0a0a]">
       <Navbar />
 
-      <main className="pt-32">
+      <main>
+        {/* Hero — article image as background */}
+        <section className="relative min-h-[50vh] flex items-end overflow-hidden">
+          {article.imageUrl ? (
+            <>
+              <Image
+                src={article.imageUrl}
+                alt={article.title}
+                fill
+                className="object-cover"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />
+            </>
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#111] to-[#070707]" />
+          )}
 
-        {/* Header */}
-        <section className="section bg-[#0a0a0a]">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-            <Link href="/blog" className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Back to Journal
-            </Link>
+          <div className="relative z-10 max-w-3xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-32 sm:pt-40 pb-12 sm:pb-16 space-y-4">
+            <FadeIn direction="up">
+              <Link
+                href="/blog"
+                className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors mb-4"
+              >
+                <ArrowRight className="w-4 h-4 rotate-180" />
+                <span>All Articles</span>
+              </Link>
+            </FadeIn>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 text-label text-white/40">
-                <span className="pill text-white/60 text-[10px]">{article.category}</span>
+            <FadeIn direction="up">
+              <div className="flex items-center gap-3 text-[11px] font-mono font-semibold tracking-widest text-white/60 uppercase">
+                <span>{article.category}</span>
+                <span>·</span>
                 <span>{article.publishedAt}</span>
-                <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{article.readTime}</span>
+                <span>·</span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  {article.readTime}
+                </span>
               </div>
+            </FadeIn>
 
-              <h1 className="text-h1 text-white leading-tight">{article.title}</h1>
-              <p className="text-lg text-white/55 leading-relaxed font-light">{article.excerpt}</p>
-            </div>
+            <h1 className="ttl-80 font-light text-white tracking-tight leading-[1.08]">
+              <LineReveal delay={0.1}>{article.title}</LineReveal>
+            </h1>
 
-            {/* Author */}
-            <div className="flex items-center justify-between pt-6 border-t border-white/[0.06]">
-              <div className="flex items-center gap-4">
-                <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20">
-                  <Image src={article.author.avatarUrl} alt={article.author.name} fill className="object-cover" />
-                </div>
-                <div>
-                  <p className="font-bold text-white">{article.author.name}</p>
-                  <p className="text-xs text-white/40 font-mono">{article.author.role}</p>
-                </div>
-              </div>
-              <span className="flex items-center gap-2 text-sm text-white/35"><Share2 className="w-4 h-4" /> Share</span>
-            </div>
+            <FadeIn direction="up" delay={0.15}>
+              <p className="text-sm sm:text-base font-light text-white/60 leading-relaxed max-w-lg">
+                {article.excerpt}
+              </p>
+            </FadeIn>
           </div>
         </section>
 
-        {/* Hero image */}
-        <section className="bg-[#0a0a0a]">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <ImageReveal className="w-full h-[50vh] rounded-2xl overflow-hidden">
-              <Image src={article.imageUrl} alt={article.title} fill className="object-cover" priority sizes="100vw" />
-            </ImageReveal>
+        {/* Author bar */}
+        <section className="bg-white border-b border-black/10">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="relative w-10 h-10 rounded-full overflow-hidden border border-black/10">
+                <Image src={article.author.avatarUrl} alt={article.author.name} fill className="object-cover" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[#0a0a0a]">{article.author.name}</p>
+                <p className="text-[11px] font-mono text-black/40">{article.author.role}</p>
+              </div>
+            </div>
+            <span className="flex items-center gap-2 text-sm text-black/35">
+              <Share2 className="w-4 h-4" /> Share
+            </span>
           </div>
         </section>
 
-        {/* Body */}
-        <section className="section">
+        {/* Body content */}
+        <section className="section bg-white">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
             <FadeIn direction="up">
-              <div className="space-y-6 text-white/75 text-[1.06rem] leading-[1.85] font-light">
+              <div className="space-y-6 text-black/70 text-[1.06rem] leading-[1.85] font-light">
                 {article.content.split("\n\n").map((para, i) => {
                   if (para.trim().startsWith("### ")) {
-                    return <h3 key={i} className="text-h3 text-white pt-4 pb-1 font-bold">{para.replace("### ", "")}</h3>;
+                    return (
+                      <h3 key={i} className="ttl-h3 font-normal text-[#0a0a0a] pt-4 pb-1">
+                        {para.replace("### ", "")}
+                      </h3>
+                    );
                   }
                   if (para.trim().startsWith("- ") || para.trim().startsWith("1. ")) {
                     return (
-                      <div key={i} className="p-5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-sm text-white/70 whitespace-pre-line">
+                      <div key={i} className="p-5 bg-black/[0.03] border border-black/10 text-sm text-black/60 whitespace-pre-line">
                         {para}
                       </div>
                     );
@@ -105,26 +136,58 @@ export default async function ArticlePage({ params }: Props) {
             </FadeIn>
 
             {/* Tags */}
-            <div className="pt-8 border-t border-white/[0.06] flex flex-wrap gap-2">
+            <div className="pt-8 border-t border-black/10 flex flex-wrap gap-2">
               {article.tags.map((tag, i) => (
-                <span key={i} className="pill text-white/50 text-[10px]">#{tag}</span>
+                <span key={i} className="px-3 py-1 rounded-full bg-black/5 border border-black/10 text-black/50 text-[11px] font-mono font-medium">
+                  #{tag}
+                </span>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Related */}
+        {/* Related articles */}
         {related.length > 0 && (
-          <section className="section-sm border-t border-white/[0.06]">
-            <div className="container-xl space-y-10">
-              <h2 className="text-h2 text-white">Related Insights</h2>
+          <section className="section-sm bg-white border-t border-black/10">
+            <div className="container-xl space-y-8">
+              <FadeIn direction="up">
+                <div className="space-y-1">
+                  <span className="text-xs font-mono font-semibold tracking-widest text-black/30 uppercase">
+                    Keep Reading
+                  </span>
+                  <h2 className="ttl-h3 font-normal text-[#0a0a0a]">
+                    Related Insights
+                  </h2>
+                </div>
+              </FadeIn>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {related.map((r) => (
-                  <Link key={r.id} href={`/blog/${r.slug}`} className="card-hover p-6 space-y-3">
-                    <span className="text-label text-white/35">{r.category} · {r.readTime}</span>
-                    <h3 className="text-xl font-bold text-white">{r.title}</h3>
-                    <p className="text-sm text-white/45 line-clamp-2 font-light">{r.excerpt}</p>
-                  </Link>
+                  <FadeIn key={r.id} direction="up" delay={0.08}>
+                    <Link href={`/blog/${r.slug}`} className="group flex gap-4 items-start">
+                      <div className="relative w-24 h-24 shrink-0 overflow-hidden bg-neutral-100 border border-black/[0.06]">
+                        <ImageReveal className="w-full h-full">
+                          <Image
+                            src={r.imageUrl}
+                            alt={r.title}
+                            fill
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                            sizes="96px"
+                          />
+                        </ImageReveal>
+                      </div>
+                      <div className="space-y-1.5 min-w-0">
+                        <div className="flex items-center gap-2 text-[10px] font-mono font-medium text-black/35 uppercase tracking-wider">
+                          <span>{r.category}</span>
+                          <span>·</span>
+                          <span>{r.readTime}</span>
+                        </div>
+                        <h3 className="text-sm font-normal text-[#0a0a0a] group-hover:text-black/60 transition-colors leading-snug line-clamp-2">
+                          {r.title}
+                        </h3>
+                      </div>
+                    </Link>
+                  </FadeIn>
                 ))}
               </div>
             </div>

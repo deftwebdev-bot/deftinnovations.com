@@ -7,7 +7,7 @@ import { Footer } from "@/components/footer/Footer";
 import { getProjectBySlug, getProjects, getMediaUrl } from "@/lib/api";
 import { FadeIn, LineReveal, ImageReveal } from "@/components/ui/Motion";
 import { CtaSection } from "@/components/home/CtaSection";
-import { ArrowLeft, ArrowUpRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, ArrowUpRight, CheckCircle2, Play } from "lucide-react";
 import type { Metadata } from "next";
 
 export const dynamicParams = true;
@@ -32,42 +32,79 @@ export default async function CaseStudyPage({ params }: Props) {
   if (!project) notFound();
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-white text-[#0a0a0a]">
       <Navbar />
-      <main className="pt-32">
 
-        {/* Header */}
-        <section className="section bg-[#0a0a0a]">
-          <div className="container-xl space-y-8">
-            <Link href="/portfolio" className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Back to Case Studies
-            </Link>
+      <main>
+        {/* Hero — project image as background */}
+        <section className="relative min-h-[50vh] flex items-end overflow-hidden">
+          {(project.imageUrl || project.videoUrl) ? (
+            <>
+              {project.imageUrl ? (
+                <Image
+                  src={getMediaUrl(project.imageUrl)}
+                  alt={project.title}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              ) : (
+                <div className="absolute inset-0 bg-neutral-900" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />
+            </>
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#111] to-[#070707]" />
+          )}
 
-            <div className="space-y-4">
+          <div className="relative z-10 container-xl pt-32 sm:pt-40 pb-12 sm:pb-20 space-y-4">
+            <FadeIn direction="up">
+              <Link
+                href="/portfolio"
+                className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors mb-4"
+              >
+                <ArrowRight className="w-4 h-4 rotate-180" />
+                <span>All Case Studies</span>
+              </Link>
+            </FadeIn>
+
+            <FadeIn direction="up">
               <div className="flex flex-wrap gap-2">
-                <span className="pill text-white/60 text-[10px]">{project.category}</span>
-                <span className="pill text-white/40 text-[10px]">{project.industry}</span>
+                <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] font-mono font-semibold tracking-widest text-white/80 uppercase">
+                  {project.category}
+                </span>
+                <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] font-mono font-semibold tracking-widest text-white/60 uppercase">
+                  {project.industry}
+                </span>
               </div>
-              <h1 className="text-display max-w-4xl">
-                <LineReveal delay={0.1}>{project.title}</LineReveal>
-              </h1>
-              <FadeIn direction="up" delay={0.25}>
-                <p className="text-xl text-white/55 max-w-2xl leading-relaxed font-light">{project.summary}</p>
-              </FadeIn>
-            </div>
+            </FadeIn>
 
-            {/* Meta bar */}
-            <FadeIn direction="up" delay={0.35}>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.06] rounded-xl overflow-hidden">
+            <h1 className="ttl-80 font-light text-white tracking-tight leading-[1.08] max-w-4xl">
+              <LineReveal delay={0.1}>{project.title}</LineReveal>
+            </h1>
+
+            <FadeIn direction="up" delay={0.15}>
+              <p className="text-sm sm:text-base font-light text-white/60 leading-relaxed max-w-md">
+                {project.summary}
+              </p>
+            </FadeIn>
+          </div>
+        </section>
+
+        {/* Meta bar */}
+        <section className="bg-white border-b border-black/10">
+          <div className="container-xl">
+            <FadeIn direction="up">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-black/10">
                 {[
                   { l: "Client", v: project.client },
                   { l: "Year", v: project.year },
                   { l: "Category", v: project.category },
                   { l: "Services", v: `${project.servicesProvided.length} delivered` },
                 ].map((m, i) => (
-                  <div key={i} className="bg-[#0a0a0a] p-5 space-y-1">
-                    <span className="text-label text-white/25">{m.l}</span>
-                    <p className="text-sm font-semibold text-white">{m.v}</p>
+                  <div key={i} className="bg-white p-5 space-y-1">
+                    <span className="text-[11px] font-mono font-semibold tracking-widest text-black/30 uppercase">{m.l}</span>
+                    <p className="text-sm font-semibold text-[#0a0a0a]">{m.v}</p>
                   </div>
                 ))}
               </div>
@@ -75,25 +112,52 @@ export default async function CaseStudyPage({ params }: Props) {
           </div>
         </section>
 
-        {/* Full-bleed hero image */}
-        <section className="bg-[#0a0a0a]">
+        {/* Hero media — image or video */}
+        <section className="section bg-white">
           <div className="container-xl">
-            <ImageReveal className="w-full h-[55vh] sm:h-[65vh] rounded-2xl overflow-hidden">
-              <Image src={project.imageUrl} alt={project.title} fill className="object-cover" priority sizes="100vw" />
-            </ImageReveal>
+            {project.videoUrl ? (
+              <div className="relative w-full aspect-video bg-neutral-100 border border-black/[0.06] overflow-hidden">
+                <iframe
+                  src={project.videoUrl}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={project.title}
+                />
+              </div>
+            ) : project.imageUrl ? (
+              <div className="relative w-full aspect-video overflow-hidden bg-neutral-100 border border-black/[0.06]">
+                <ImageReveal className="w-full h-full">
+                  <Image
+                    src={getMediaUrl(project.imageUrl)}
+                    alt={project.title}
+                    fill
+                    className="object-cover"
+                    priority
+                    sizes="100vw"
+                  />
+                </ImageReveal>
+              </div>
+            ) : (
+              <div className="w-full aspect-video bg-neutral-100 border border-black/[0.06] flex items-center justify-center">
+                <span className="text-7xl font-bold text-black/10 font-mono">
+                  {project.title.slice(0, 2).toUpperCase()}
+                </span>
+              </div>
+            )}
           </div>
         </section>
 
         {/* Results */}
         {project.results && project.results.length > 0 && (
-          <section className="section-sm border-t border-white/[0.06]">
+          <section className="section-sm bg-white border-t border-black/10">
             <div className="container-xl">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/[0.06] rounded-2xl overflow-hidden">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {project.results.map((r, i) => (
                   <FadeIn key={i} direction="up" delay={i * 0.1}>
-                    <div className="bg-[#0a0a0a] p-10 text-center space-y-2">
-                      <div className="text-h1 font-black font-mono text-white">{r.metric}</div>
-                      <div className="text-label text-white/40">{r.label}</div>
+                    <div className="text-center space-y-2 py-8">
+                      <div className="text-5xl sm:text-6xl font-black font-mono text-[#0a0a0a] tracking-tight">{r.metric}</div>
+                      <div className="text-sm font-mono text-black/40 tracking-wider uppercase">{r.label}</div>
                     </div>
                   </FadeIn>
                 ))}
@@ -103,69 +167,89 @@ export default async function CaseStudyPage({ params }: Props) {
         )}
 
         {/* Narrative */}
-        <section className="section">
+        <section className="section bg-white border-t border-black/10">
           <div className="container-xl">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+              <div className="lg:col-span-8 space-y-16">
+                <FadeIn direction="up">
+                  <div className="space-y-4">
+                    <span className="text-xs font-mono font-semibold tracking-widest text-black/30 uppercase">
+                      01 — The Challenge
+                    </span>
+                    <h2 className="ttl-80 font-light text-[#0a0a0a] tracking-tight">The Problem</h2>
+                    <p className="text-base text-black/60 font-light leading-relaxed">{project.challenge}</p>
+                  </div>
+                </FadeIn>
 
-              <div className="lg:col-span-8 space-y-20">
-                <div className="space-y-5">
-                  <span className="text-label text-white/30">01 — The Challenge</span>
-                  <h2 className="text-h2 text-white">The Problem</h2>
-                  <p className="text-white/60 text-base leading-relaxed font-light">{project.challenge}</p>
-                </div>
-
-                <div className="space-y-5">
-                  <span className="text-label text-white/30">02 — The Solution</span>
-                  <h2 className="text-h2 text-white">How We Solved It</h2>
-                  <p className="text-white/60 text-base leading-relaxed font-light">{project.solution}</p>
-                </div>
+                <FadeIn direction="up" delay={0.1}>
+                  <div className="space-y-4">
+                    <span className="text-xs font-mono font-semibold tracking-widest text-black/30 uppercase">
+                      02 — The Solution
+                    </span>
+                    <h2 className="ttl-80 font-light text-[#0a0a0a] tracking-tight">How We Solved It</h2>
+                    <p className="text-base text-black/60 font-light leading-relaxed">{project.solution}</p>
+                  </div>
+                </FadeIn>
 
                 {/* Gallery */}
                 {project.galleryImages && project.galleryImages.length > 0 && (
-                  <div className="space-y-6">
-                    <span className="text-label text-white/30">03 — Visual Showcase</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {project.galleryImages.map((url, i) => (
-                        <ImageReveal key={i} className="h-64 rounded-xl overflow-hidden" delay={0.05 * i}>
-                          <Image src={url} alt={`${project.title} asset ${i + 1}`} fill className="object-cover" sizes="50vw" />
-                        </ImageReveal>
-                      ))}
+                  <FadeIn direction="up" delay={0.15}>
+                    <div className="space-y-4">
+                      <span className="text-xs font-mono font-semibold tracking-widest text-black/30 uppercase">
+                        03 — Visual Showcase
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {project.galleryImages.map((url, i) => (
+                          <div key={i} className="relative h-64 overflow-hidden bg-neutral-100 border border-black/[0.06]">
+                            <ImageReveal className="w-full h-full">
+                              <Image src={url} alt={`${project.title} asset ${i + 1}`} fill className="object-cover" sizes="50vw" />
+                            </ImageReveal>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  </FadeIn>
                 )}
               </div>
 
               {/* Sidebar */}
               <div className="lg:col-span-4 space-y-6">
-                <div className="rounded-2xl bg-[#111] border border-white/[0.07] p-6 space-y-4">
-                  <h3 className="text-label text-white/30">Capabilities Provided</h3>
-                  <ul className="space-y-2">
-                    {project.servicesProvided.map((s, i) => (
-                      <li key={i} className="flex items-center gap-2 text-sm text-white/65">
-                        <CheckCircle2 className="w-4 h-4 text-white/40 shrink-0" />{s}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="rounded-2xl bg-[#111] border border-white/[0.07] p-6 space-y-4">
-                  <h3 className="text-label text-white/30">Technologies</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {project.technologiesUsed.map((t, i) => (
-                      <span key={i} className="pill text-white/60 text-[10px]">{t}</span>
-                    ))}
+                <FadeIn direction="up" delay={0.1}>
+                  <div className="p-6 space-y-4 border border-black/10">
+                    <h3 className="text-xs font-mono font-semibold tracking-widest text-black/30 uppercase">Capabilities Provided</h3>
+                    <ul className="space-y-2">
+                      {project.servicesProvided.map((s, i) => (
+                        <li key={i} className="flex items-center gap-2 text-sm text-black/65">
+                          <CheckCircle2 className="w-4 h-4 text-black/25 shrink-0" />{s}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                </div>
+                </FadeIn>
 
-                <div className="rounded-2xl bg-white p-6 space-y-4 text-black">
-                  <h4 className="text-xl font-bold">Need similar results?</h4>
-                  <p className="text-sm text-black/60 font-light leading-relaxed">Book a strategy consultation with our lead team.</p>
-                  <Link href="/contact" className="inline-flex items-center gap-2 w-full justify-center px-5 py-3 rounded-full bg-black text-white font-bold text-sm hover:bg-black/90 transition-all">
-                    Start a Project <ArrowUpRight className="w-4 h-4" />
-                  </Link>
-                </div>
+                <FadeIn direction="up" delay={0.15}>
+                  <div className="p-6 space-y-4 border border-black/10">
+                    <h3 className="text-xs font-mono font-semibold tracking-widest text-black/30 uppercase">Technologies</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {project.technologiesUsed.map((t, i) => (
+                        <span key={i} className="px-3 py-1 rounded-full bg-black/5 border border-black/10 text-black/60 text-[11px] font-mono font-medium">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </FadeIn>
+
+                <FadeIn direction="up" delay={0.2}>
+                  <div className="p-6 space-y-4 bg-[#0a0a0a] text-white">
+                    <h4 className="text-xl font-bold">Need similar results?</h4>
+                    <p className="text-sm text-white/60 font-light leading-relaxed">Book a strategy consultation with our lead team.</p>
+                    <Link href="/contact" className="inline-flex items-center gap-2 w-full justify-center px-5 py-3 rounded-full bg-white text-black font-bold text-sm hover:bg-white/90 transition-all">
+                      Start a Project <ArrowUpRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                </FadeIn>
               </div>
-
             </div>
           </div>
         </section>

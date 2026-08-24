@@ -4,7 +4,7 @@ import { getProjects, getArticles, getCareerJobs } from "@/lib/api";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://deftinnovations.com";
 
-  const staticPages: MetadataRoute.Sitemap = ["", "/about", "/services", "/portfolio", "/blog", "/careers", "/contact"].map(
+  const staticPages: MetadataRoute.Sitemap = ["", "/about", "/our-team", "/services", "/portfolio", "/blog", "/careers", "/contact"].map(
     (route) => ({
       url: `${baseUrl}${route}`,
       lastModified: new Date().toISOString(),

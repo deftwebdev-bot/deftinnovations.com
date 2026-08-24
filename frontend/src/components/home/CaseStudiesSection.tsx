@@ -3,9 +3,9 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Play } from "lucide-react";
 import { FadeIn, LineReveal, ImageReveal } from "@/components/ui/Motion";
-import { Project, PROJECTS_DATA } from "@/data/projects";
+import { Project } from "@/lib/api";
 import { getMediaUrl } from "@/lib/api";
 
 interface CaseStudiesSectionProps {
@@ -13,14 +13,14 @@ interface CaseStudiesSectionProps {
 }
 
 export const CaseStudiesSection: React.FC<CaseStudiesSectionProps> = ({
-  projects = PROJECTS_DATA,
+  projects = [],
 }) => {
-  const projectList = projects && projects.length > 0 ? projects : PROJECTS_DATA;
+  const projectList = projects ?? [];
   const displayProjects = projectList.slice(0, 6);
 
   return (
-    <section className="section bg-[#ffffff] text-[#0a0a0a]">
-      <div className="container-xl space-y-16">
+    <section className="section bg-white text-[#0a0a0a]">
+      <div className="container-xl space-y-12">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-black/[0.08]">
           <div className="space-y-2">
@@ -37,7 +37,7 @@ export const CaseStudiesSection: React.FC<CaseStudiesSectionProps> = ({
           <FadeIn direction="up" delay={0.2}>
             <Link
               href="/portfolio"
-              className="btn-outline-dark text-sm inline-flex items-center gap-2 group"
+              className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors group"
             >
               <span>View all works</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -45,48 +45,42 @@ export const CaseStudiesSection: React.FC<CaseStudiesSectionProps> = ({
           </FadeIn>
         </div>
 
-        {/* 3-Col Case Studies Grid (WAC Style) */}
+        {/* 3-Col Case Studies Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
           {displayProjects.map((project, idx) => (
             <FadeIn key={project.id} direction="up" delay={idx * 0.08}>
               <Link
                 href={`/portfolio/${project.slug}`}
-                className="group block space-y-4 cursor-pointer"
+                className="group block space-y-3 cursor-pointer"
               >
-                {/* 1:1 Aspect Ratio Image Frame */}
-                <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-neutral-100 border border-black/[0.06]">
-                  <ImageReveal className="w-full h-full">
-                    <Image
-                      src={getMediaUrl(project.imageUrl)}
-                      alt={project.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-                  </ImageReveal>
-
-                  {/* Category Pill on Image */}
-                  <div className="absolute top-4 left-4 z-20">
-                    <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur-md text-black text-xs font-medium shadow-sm">
-                      {project.category}
-                    </span>
-                  </div>
-
-                  {project.results && project.results[0] && (
-                    <div className="absolute bottom-4 right-4 z-20 px-3.5 py-1.5 rounded-xl bg-black/80 backdrop-blur-md text-white text-right shadow-sm">
-                      <span className="text-sm font-bold font-mono">{project.results[0].metric}</span>
-                      <span className="text-[10px] text-white/70 block leading-tight">{project.results[0].label}</span>
+                {/* Image — clean, no overlays */}
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-100 border border-black/[0.06]">
+                  {project.videoUrl ? (
+                    <div className="w-full h-full bg-neutral-900 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                      </div>
                     </div>
+                  ) : (
+                    <ImageReveal className="w-full h-full">
+                      <Image
+                        src={getMediaUrl(project.imageUrl)}
+                        alt={project.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    </ImageReveal>
                   )}
                 </div>
 
-                {/* Info Text */}
+                {/* Caption — small category + title */}
                 <div className="space-y-1.5">
-                  <div className="text-xs font-mono font-medium text-black/40 uppercase tracking-wider">
-                    {project.client} · {project.year}
-                  </div>
-                  <h3 className="ttl-h3 font-normal text-[#0a0a0a] group-hover:text-black/70 transition-colors leading-snug">
-                    {project.title}: {project.summary}
+                  <span className="text-[11px] font-mono font-medium text-black/40 uppercase tracking-wider">
+                    {project.category}
+                  </span>
+                  <h3 className="text-base font-normal text-[#0a0a0a] group-hover:text-black/60 transition-colors leading-snug">
+                    {project.title}
                   </h3>
                 </div>
               </Link>
@@ -96,7 +90,7 @@ export const CaseStudiesSection: React.FC<CaseStudiesSectionProps> = ({
 
         {/* Bottom CTA on mobile */}
         <div className="text-center pt-4 md:hidden">
-          <Link href="/portfolio" className="btn-dark w-full justify-center">
+          <Link href="/portfolio" className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700">
             <span>View all works</span>
             <ArrowRight className="w-4 h-4" />
           </Link>

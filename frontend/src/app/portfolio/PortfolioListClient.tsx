@@ -1,144 +1,183 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FadeIn, LineReveal, ImageReveal } from "@/components/ui/Motion";
-import { Project } from "@/data/projects";
+import { FadeIn, ImageReveal } from "@/components/ui/Motion";
+import { Project } from "@/lib/api";
 import { getMediaUrl } from "@/lib/api";
-import { ArrowUpRight } from "lucide-react";
+import { Play, ChevronDown, Check } from "lucide-react";
 
-const CATEGORIES = ["All", "Branding", "Web Development", "Digital Marketing", "Performance Marketing", "Social Media", "Creative"];
+function getUniqueIndustries(projects: Project[]): string[] {
+  const set = new Set(projects.map((p) => p.industry).filter(Boolean));
+  return Array.from(set).sort();
+}
 
-export function PortfolioListClient({ initialProjects }: { initialProjects: Project[] }) {
-  const [cat, setCat] = useState("All");
-  const projects = cat === "All" ? initialProjects : initialProjects.filter((p) => p.category === cat);
+function getUniqueCategories(projects: Project[]): string[] {
+  const set = new Set(projects.map((p) => p.category).filter(Boolean));
+  return Array.from(set).sort();
+}
+
+function DropdownFilter({
+  label,
+  options,
+  selected,
+  onSelect,
+}: {
+  label: string;
+  options: string[];
+  selected: string;
+  onSelect: (val: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   return (
-    <>
-      {/* Hero */}
-      <section className="section bg-[#0a0a0a]">
-        <div className="container-xl space-y-10">
-          <FadeIn direction="up">
-            <span className="pill text-white/60">Case Studies</span>
-          </FadeIn>
-          <h1 className="text-display max-w-4xl">
-            <LineReveal delay={0.1}>Substance &amp; results.</LineReveal>
-            <LineReveal delay={0.22} className="text-white/30">
-              Not just pretty slides.
-            </LineReveal>
-          </h1>
-          <FadeIn direction="up" delay={0.35}>
-            <p className="text-xl text-white/50 leading-relaxed max-w-xl font-light">
-              Explore how we partner with forward-thinking enterprises to deliver transformative outcomes.
-            </p>
-          </FadeIn>
-        </div>
-      </section>
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium border border-black/15 text-black/60 hover:border-black/30 hover:text-[#0a0a0a] transition-all"
+      >
+        <span>{selected || label}</span>
+        <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
 
-      {/* Filter bar */}
-      <div className="sticky top-[72px] z-30 bg-[#0a0a0a]/90 backdrop-blur-xl border-y border-white/[0.06]">
-        <div className="container-xl py-3 flex items-center gap-2 overflow-x-auto">
-          {CATEGORIES.map((c) => (
+      {open && (
+        <div className="absolute right-0 mt-2 w-56 bg-white border border-black/10 rounded-xl shadow-lg z-50 overflow-hidden">
+          <button
+            onClick={() => { onSelect(""); setOpen(false); }}
+            className={`w-full text-left px-4 py-3 text-sm hover:bg-black/[0.03] transition-colors flex items-center justify-between ${!selected ? "text-[#0a0a0a] font-medium" : "text-black/60"}`}
+          >
+            <span>All {label}</span>
+            {!selected && <Check className="w-4 h-4 text-black/40" />}
+          </button>
+          {options.map((opt) => (
             <button
-              key={c}
-              onClick={() => setCat(c)}
-              className={`px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                cat === c
-                  ? "bg-white text-black font-bold"
-                  : "text-white/45 hover:text-white hover:bg-white/5 border border-white/[0.08]"
-              }`}
+              key={opt}
+              onClick={() => { onSelect(opt); setOpen(false); }}
+              className={`w-full text-left px-4 py-3 text-sm hover:bg-black/[0.03] transition-colors flex items-center justify-between ${selected === opt ? "text-[#0a0a0a] font-medium" : "text-black/60"}`}
             >
-              {c}
+              <span>{opt}</span>
+              {selected === opt && <Check className="w-4 h-4 text-black/40" />}
             </button>
           ))}
         </div>
-      </div>
+      )}
+    </div>
+  );
+}
 
-      {/* Projects */}
-      <section className="section bg-[#0a0a0a]">
+export function PortfolioListClient({ initialProjects }: { initialProjects: Project[] }) {
+  const [industry, setIndustry] = useState("");
+  const [expertise, setExpertise] = useState("");
+
+  const industries = getUniqueIndustries(initialProjects);
+  const categories = getUniqueCategories(initialProjects);
+
+  const projects = initialProjects.filter((p) => {
+    if (industry && p.industry !== industry) return false;
+    if (expertise && p.category !== expertise) return false;
+    return true;
+  });
+
+  return (
+    <>
+      {/* Page header — clean, no hero image */}
+      <section className="section bg-white">
+        <div className="container-xl">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-black/[0.08]">
+            <div className="space-y-2">
+              <FadeIn direction="up">
+                <h1 className="ttl-80 font-light text-[#0a0a0a] tracking-tight">
+                  Case Studies
+                  <span className="text-2xl font-light text-black/30 ml-3 align-super">({projects.length})</span>
+                </h1>
+              </FadeIn>
+            </div>
+
+            {/* Dropdown filters */}
+            <FadeIn direction="up" delay={0.1}>
+              <div className="flex items-center gap-3">
+                <DropdownFilter
+                  label="Industries"
+                  options={industries}
+                  selected={industry}
+                  onSelect={setIndustry}
+                />
+                <DropdownFilter
+                  label="Expertise"
+                  options={categories}
+                  selected={expertise}
+                  onSelect={setExpertise}
+                />
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+      </section>
+
+      {/* Projects grid — clean cards like reference */}
+      <section className="section-sm bg-white pt-0">
         <div className="container-xl">
           {projects.length === 0 ? (
             <div className="text-center py-20 space-y-4">
-              <p className="text-white/50 text-lg">No projects in this category yet.</p>
-              <button onClick={() => setCat("All")} className="btn-ghost text-sm">
-                Show All
+              <p className="text-black/40 text-lg">No projects match the selected filters.</p>
+              <button
+                onClick={() => { setIndustry(""); setExpertise(""); }}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Clear filters
               </button>
             </div>
           ) : (
-            <div className="space-y-6">
-              {/* First project — hero-sized */}
-              <FadeIn direction="up">
-                <Link
-                  href={`/portfolio/${projects[0].slug}`}
-                  className="group block relative rounded-2xl overflow-hidden h-[60vh] min-h-[380px]"
-                >
-                  <ImageReveal className="absolute inset-0">
-                    <Image
-                      src={getMediaUrl(projects[0].imageUrl)}
-                      alt={projects[0].title}
-                      fill
-                      className="object-cover transition-transform duration-[1.4s] group-hover:scale-105"
-                      sizes="100vw"
-                      priority
-                    />
-                  </ImageReveal>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-8 sm:p-12 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6">
-                    <div className="space-y-2">
-                      <span className="pill text-white/70 text-[10px]">
-                        {projects[0].category} · {projects[0].client}
-                      </span>
-                      <h2 className="text-h2 text-white max-w-xl">{projects[0].title}</h2>
-                    </div>
-                    {projects[0].results && projects[0].results[0] && (
-                      <div className="text-right shrink-0">
-                        <div className="text-4xl font-black font-mono text-white">{projects[0].results[0].metric}</div>
-                        <div className="text-label text-white/50">{projects[0].results[0].label}</div>
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              </FadeIn>
-
-              {/* Remaining projects — 2-col grid */}
-              {projects.length > 1 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {projects.slice(1).map((project, idx) => (
-                    <FadeIn key={project.id} direction="up" delay={idx * 0.1}>
-                      <Link
-                        href={`/portfolio/${project.slug}`}
-                        className="group block relative rounded-2xl overflow-hidden h-[45vh] min-h-[320px]"
-                      >
-                        <ImageReveal className="absolute inset-0" delay={0.05 * idx}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
+              {projects.map((project, idx) => (
+                <FadeIn key={project.id} direction="up" delay={idx * 0.06}>
+                  <Link
+                    href={`/portfolio/${project.slug}`}
+                    className="group block space-y-3 cursor-pointer"
+                  >
+                    {/* Image — clean, no overlays */}
+                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-100 border border-black/[0.06]">
+                      {project.videoUrl ? (
+                        <div className="w-full h-full bg-neutral-900 flex items-center justify-center">
+                          <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                          </div>
+                        </div>
+                      ) : (
+                        <ImageReveal className="w-full h-full">
                           <Image
                             src={getMediaUrl(project.imageUrl)}
                             alt={project.title}
                             fill
-                            className="object-cover transition-transform duration-[1.4s] group-hover:scale-105"
-                            sizes="50vw"
+                            className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           />
                         </ImageReveal>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                      )}
+                    </div>
 
-                        <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 space-y-2">
-                          <span className="pill text-white/60 text-[10px]">
-                            {project.category} · {project.year}
-                          </span>
-                          <h3 className="text-h3 text-white leading-snug">{project.title}</h3>
-                          <p className="text-white/45 text-sm leading-relaxed line-clamp-2 font-light">{project.summary}</p>
-                        </div>
-
-                        <div className="absolute top-5 right-5">
-                          <span className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:rotate-45">
-                            <ArrowUpRight className="w-4 h-4 text-white" />
-                          </span>
-                        </div>
-                      </Link>
-                    </FadeIn>
-                  ))}
-                </div>
-              )}
+                    {/* Caption — category + title */}
+                    <div className="space-y-1.5">
+                      <span className="text-[11px] font-mono font-medium text-black/40 uppercase tracking-wider">
+                        {project.category}
+                      </span>
+                      <h3 className="text-base font-normal text-[#0a0a0a] group-hover:text-black/60 transition-colors leading-snug">
+                        {project.title}
+                      </h3>
+                    </div>
+                  </Link>
+                </FadeIn>
+              ))}
             </div>
           )}
         </div>

@@ -5,14 +5,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Volume2, VolumeX, ChevronLeft, ChevronRight } from "lucide-react";
-import { HeroContent, FALLBACK_HERO_SLIDES, getMediaUrl } from "@/lib/api";
+import { HeroContent, getMediaUrl } from "@/lib/api";
 
 interface HeroCarouselProps {
   slides?: HeroContent[];
 }
 
-export const HeroCarousel: React.FC<HeroCarouselProps> = ({ slides = FALLBACK_HERO_SLIDES }) => {
-  const slideList = slides && slides.length > 0 ? slides : FALLBACK_HERO_SLIDES;
+export const HeroCarousel: React.FC<HeroCarouselProps> = ({ slides = [] }) => {
+  const slideList = slides ?? [];
   const [currentIdx, setCurrentIdx] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -70,15 +70,15 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ slides = FALLBACK_HE
           {activeSlide.videoUrl ? (
             <video
               ref={(el) => { videoRefs.current[currentIdx] = el; }}
-              src={activeSlide.videoUrl}
-              poster={getMediaUrl(activeSlide.heroImageUrl)}
+              src={getMediaUrl(activeSlide.videoUrl)}
+              poster={activeSlide.heroImageUrl ? getMediaUrl(activeSlide.heroImageUrl) : undefined}
               autoPlay
               muted={isMuted}
               loop
               playsInline
               className="w-full h-full object-cover"
             />
-          ) : (
+          ) : activeSlide.heroImageUrl ? (
             <Image
               src={getMediaUrl(activeSlide.heroImageUrl)}
               alt={activeSlide.headlinePrimary}
@@ -87,7 +87,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ slides = FALLBACK_HE
               className="object-cover"
               sizes="100vw"
             />
-          )}
+          ) : null}
 
           {/* Cinematic overlay gradients */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-black/30" />

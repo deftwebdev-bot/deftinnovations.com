@@ -1,6 +1,7 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from unfold.admin import ModelAdmin
-from .models import HeroContent, TrustedBrand, TeamMember, Testimonial, TrustStat
+from .models import HeroContent, TrustedBrand, TeamMember, CultureGallery, Testimonial, TrustStat
 
 @admin.register(HeroContent)
 class HeroContentAdmin(ModelAdmin):
@@ -8,34 +9,43 @@ class HeroContentAdmin(ModelAdmin):
     list_editable = ('order', 'is_active')
     search_fields = ('headline_primary', 'headline_secondary', 'subheadline')
     fields = (
-        'badge_text',
-        'headline_primary',
-        'headline_secondary',
-        'subheadline',
-        'primary_cta_text',
-        'primary_cta_link',
-        'secondary_cta_text',
-        'secondary_cta_link',
-        'video_url',
+        'badge_text', 'headline_primary', 'headline_secondary', 'subheadline',
+        'primary_cta_text', 'primary_cta_link', 'secondary_cta_text', 'secondary_cta_link',
+        'video_file',
         'photo',
-        'hero_image_url',
-        'order',
-        'is_active',
+        'order', 'is_active',
     )
 
 @admin.register(TrustedBrand)
 class TrustedBrandAdmin(ModelAdmin):
-    list_display = ('name', 'order', 'is_active')
-    list_editable = ('order', 'is_active')
-    search_fields = ('name',)
-    fields = ('name', 'logo', 'logo_url', 'website_url', 'order', 'is_active')
+    list_display = ('name', 'industry', 'is_featured', 'order', 'is_active')
+    list_filter = ('industry', 'is_featured', 'is_active')
+    list_editable = ('is_featured', 'order', 'is_active')
+    search_fields = ('name', 'industry')
+    fields = ('name', 'industry', 'logo', 'logo_url', 'website_url', 'is_featured', 'order', 'is_active')
 
 @admin.register(TeamMember)
 class TeamMemberAdmin(ModelAdmin):
-    list_display = ('name', 'role', 'order')
-    list_editable = ('order',)
+    list_display = ('name', 'role', 'order', 'is_active')
+    list_editable = ('order', 'is_active')
     search_fields = ('name', 'role')
-    fields = ('name', 'role', 'photo', 'order')
+    fields = ('name', 'role', 'photo', 'order', 'is_active')
+
+@admin.register(CultureGallery)
+class CultureGalleryAdmin(ModelAdmin):
+    list_display = ('photo_preview', 'order', 'is_active', 'created_at')
+    list_editable = ('order', 'is_active')
+    list_filter = ('is_active',)
+    fields = ('photo', 'order', 'is_active')
+
+    def photo_preview(self, obj):
+        if obj.photo:
+            return format_html(
+                '<img src="{}" style="height:60px;width:80px;object-fit:cover;border-radius:6px;" />',
+                obj.photo.url
+            )
+        return "—"
+    photo_preview.short_description = "Preview"
 
 @admin.register(Testimonial)
 class TestimonialAdmin(ModelAdmin):

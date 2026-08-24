@@ -3,8 +3,9 @@
 import React from "react";
 import Image from "next/image";
 import { FadeIn, LineReveal, ImageReveal } from "@/components/ui/Motion";
-import { Testimonial, TESTIMONIALS_DATA } from "@/data/testimonials";
-import { Quote } from "lucide-react";
+import { Testimonial } from "@/lib/api";
+import Link from "next/link";
+import { ArrowRight, Quote } from "lucide-react";
 
 interface TestimonialsSectionProps {
   testimonials?: Testimonial[];
@@ -17,16 +18,16 @@ const TESTIMONIAL_COVERS = [
 ];
 
 export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
-  testimonials = TESTIMONIALS_DATA,
+  testimonials = [],
 }) => {
-  const list = testimonials && testimonials.length > 0 ? testimonials : TESTIMONIALS_DATA;
+  const list = testimonials ?? [];
   const displayList = list.slice(0, 3);
 
   return (
     <section className="section bg-[#f8f9fa] text-[#0a0a0a] border-b border-black/[0.06]">
       <div className="container-xl space-y-16">
         {/* Header */}
-        <div className="space-y-2 pb-6 border-b border-black/[0.08]">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-black/[0.08]">
           <FadeIn direction="up">
             <span className="text-xs font-mono font-semibold tracking-widest text-black/40 uppercase">
               Client Experiences
@@ -39,6 +40,16 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
             Discover authentic experiences, straight from the ambitious leaders we partner with.
           </p>
         </div>
+
+        <FadeIn direction="up" delay={0.2}>
+          <Link
+            href="/testimonials"
+            className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors group"
+          >
+            <span>View all testimonials</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </FadeIn>
 
         {/* 3-Col Stories Grid (WAC Style) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

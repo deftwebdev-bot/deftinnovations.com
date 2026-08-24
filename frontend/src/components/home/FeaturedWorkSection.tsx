@@ -5,15 +5,15 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import { FadeIn, ImageReveal, LineReveal } from "@/components/ui/Motion";
-import { Project, PROJECTS_DATA } from "@/data/projects";
+import { Project } from "@/lib/api";
 import { getMediaUrl } from "@/lib/api";
 
 interface FeaturedWorkSectionProps {
   projects?: Project[];
 }
 
-export const FeaturedWorkSection: React.FC<FeaturedWorkSectionProps> = ({ projects = PROJECTS_DATA }) => {
-  const projectList = projects.length > 0 ? projects : PROJECTS_DATA;
+export const FeaturedWorkSection: React.FC<FeaturedWorkSectionProps> = ({ projects = [] }) => {
+  const projectList = projects ?? [];
   const featured = projectList.filter((p) => p.featured).slice(0, 3);
   const displayProjects = featured.length >= 3 ? featured : projectList.slice(0, 3);
 
@@ -102,14 +102,8 @@ export const FeaturedWorkSection: React.FC<FeaturedWorkSectionProps> = ({ projec
                   </ImageReveal>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
-                  <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 space-y-2">
-                    <span className="pill text-white/60 text-[10px]">
-                      {project.category} · {project.year}
-                    </span>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
                     <h3 className="text-h3 text-white leading-snug">{project.title}</h3>
-                    <p className="text-white/45 text-sm leading-relaxed line-clamp-2 font-light">
-                      {project.summary}
-                    </p>
                   </div>
 
                   <div className="absolute top-5 right-5">

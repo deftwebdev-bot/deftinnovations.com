@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { FadeIn, LineReveal } from "@/components/ui/Motion";
-import { TeamMember } from "@/data/team";
+import { TeamMember } from "@/lib/api";
 import { getMediaUrl } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -24,6 +24,7 @@ export const CareersCultureSection: React.FC<CareersCultureSectionProps> = ({ te
 
   // Extract photos from uploaded team members or fallback
   const teamPhotos = team
+    .slice(0, 2)
     .map((m) => m.imageUrl)
     .filter((url) => url && typeof url === 'string' && url.trim().length > 0 && !url.includes("/admin/"));
 
@@ -33,7 +34,7 @@ export const CareersCultureSection: React.FC<CareersCultureSectionProps> = ({ te
     if (displayPhotos.length <= 1) return;
     const timer = setInterval(() => {
       setActivePhotoIdx((prev) => (prev + 1) % displayPhotos.length);
-    }, 4500);
+    }, 7000);
     return () => clearInterval(timer);
   }, [displayPhotos.length]);
 

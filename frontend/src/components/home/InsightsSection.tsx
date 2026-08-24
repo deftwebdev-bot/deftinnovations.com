@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { FadeIn, LineReveal, ImageReveal } from "@/components/ui/Motion";
-import { Article, ARTICLES_DATA } from "@/data/articles";
+import { Article } from "@/lib/api";
 import { getMediaUrl } from "@/lib/api";
 
 interface InsightsSectionProps {
@@ -13,9 +13,9 @@ interface InsightsSectionProps {
 }
 
 export const InsightsSection: React.FC<InsightsSectionProps> = ({
-  articles = ARTICLES_DATA,
+  articles = [],
 }) => {
-  const articleList = articles && articles.length > 0 ? articles : ARTICLES_DATA;
+  const articleList = articles ?? [];
   const displayList = articleList.slice(0, 3);
 
   return (

@@ -10,14 +10,15 @@ from apps.blog.schemas import ArticleOut
 from apps.portfolio.models import Project
 from apps.portfolio.schemas import ProjectOut
 
-from apps.services.models import Service
-from apps.services.schemas import ServiceOut
+from apps.services.models import Service, ServiceCategory
+from apps.services.schemas import ServiceOut, ServiceCategoryOut
 
-from apps.company.models import HeroContent, TrustedBrand, TeamMember, Testimonial, TrustStat
+from apps.company.models import HeroContent, TrustedBrand, TeamMember, CultureGallery, Testimonial, TrustStat
 from apps.company.schemas import (
     HeroContentOut,
     TrustedBrandOut,
     TeamMemberOut,
+    CultureGalleryOut,
     TestimonialOut,
     TrustStatOut,
 )
@@ -80,8 +81,14 @@ services_router = Router(tags=["Services"])
 
 @services_router.get("/", response=List[ServiceOut])
 def list_services(request):
-    qs = Service.objects.all()
+    qs = Service.objects.select_related('category').all()
     return [ServiceOut.from_model(s) for s in qs]
+
+@services_router.get("/categorized", response=List[ServiceCategoryOut])
+def list_categorized_services(request):
+    """Returns categories with nested services — the grouped view."""
+    qs = ServiceCategory.objects.filter(is_active=True).prefetch_related('services').order_by('order', 'title')
+    return [ServiceCategoryOut.from_model(c) for c in qs]
 
 @services_router.get("/{slug}", response=ServiceOut)
 def get_service(request, slug: str):
@@ -115,8 +122,13 @@ def list_trusted_brands(request):
 
 @company_router.get("/team", response=List[TeamMemberOut])
 def list_team(request):
-    qs = TeamMember.objects.all()
+    qs = TeamMember.objects.filter(is_active=True).order_by("order", "id")
     return [TeamMemberOut.from_model(m) for m in qs]
+
+@company_router.get("/gallery", response=List[CultureGalleryOut])
+def list_gallery(request):
+    qs = CultureGallery.objects.filter(is_active=True).order_by("order", "-created_at")
+    return [CultureGalleryOut.from_model(g) for g in qs]
 
 @company_router.get("/testimonials", response=List[TestimonialOut])
 def list_testimonials(request):
@@ -211,7 +223,6 @@ def submit_contact_form(request, data: ContactIn):
         company=data.company or "",
         email=data.email,
         phone=data.phone or "",
-        budget=data.budget or "",
         service=data.service or "",
         message=data.message,
         ip_address=ip,
@@ -224,8 +235,7 @@ def submit_contact_form(request, data: ContactIn):
         f"Email: {data.email}\n"
         f"Company: {data.company}\n"
         f"Phone: {data.phone}\n"
-        f"Service Interested: {data.service}\n"
-        f"Estimated Budget: {data.budget}\n\n"
+        f"Service Interested: {data.service}\n\n"
         f"Message:\n{data.message}\n"
     )
 

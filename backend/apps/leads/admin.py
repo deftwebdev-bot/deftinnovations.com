@@ -21,10 +21,8 @@ def export_leads_csv(modeladmin, request, queryset):
         "Email",
         "Phone",
         "Service",
-        "Budget",
         "Status",
         "Message",
-        "Notes",
         "IP Address",
         "Created At",
         "Updated At",
@@ -38,10 +36,8 @@ def export_leads_csv(modeladmin, request, queryset):
             lead.email,
             lead.phone or "",
             lead.service or "",
-            lead.budget or "",
             lead.status,
             lead.message,
-            lead.notes or "",
             lead.ip_address or "",
             lead.created_at.strftime("%Y-%m-%d %H:%M:%S") if lead.created_at else "",
             lead.updated_at.strftime("%Y-%m-%d %H:%M:%S") if lead.updated_at else "",
@@ -52,9 +48,9 @@ def export_leads_csv(modeladmin, request, queryset):
 
 @admin.register(ContactLead)
 class ContactLeadAdmin(ModelAdmin):
-    list_display = ('name', 'company', 'email', 'phone', 'service', 'budget', 'status', 'created_at')
-    list_filter = ('status', 'service', 'budget', 'created_at')
-    search_fields = ('name', 'company', 'email', 'phone', 'message', 'notes')
+    list_display = ('name', 'company', 'email', 'phone', 'service', 'status', 'created_at')
+    list_filter = ('status', 'service', 'created_at')
+    search_fields = ('name', 'company', 'email', 'phone', 'message')
     list_editable = ('status',)
     readonly_fields = ('created_at', 'updated_at', 'ip_address')
     actions = [export_leads_csv]

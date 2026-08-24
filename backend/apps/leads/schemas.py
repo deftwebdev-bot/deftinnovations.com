@@ -6,7 +6,6 @@ class ContactIn(BaseModel):
     company: Optional[str] = ""
     email: EmailStr
     phone: Optional[str] = ""
-    budget: Optional[str] = ""
     service: Optional[str] = ""
     message: str
 

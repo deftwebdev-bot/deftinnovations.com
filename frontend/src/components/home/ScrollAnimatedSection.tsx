@@ -44,7 +44,7 @@ export const ScrollAnimatedSection = () => {
   return (
     <section
       ref={containerRef}
-      className="relative bg-[#070707] text-white min-h-[220vh] border-b border-white/[0.08]"
+      className="relative bg-[#070707] text-white min-h-[340vh] border-b border-white/[0.08]"
     >
       {/* Sticky Fullscreen Viewport */}
       <div className="sticky top-0 h-screen w-full flex flex-col justify-between items-center py-16 sm:py-20 px-6 sm:px-12 overflow-hidden z-10">
@@ -56,7 +56,7 @@ export const ScrollAnimatedSection = () => {
         </div>
 
         {/* Top Header Tag */}
-        <div className="w-full max-w-6xl flex items-center justify-between border-b border-white/10 pb-4">
+        {/* <div className="w-full max-w-6xl flex items-center justify-between border-b border-white/10 pb-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-[11px] font-mono tracking-widest text-white/90 uppercase">
             <Sparkles className="w-3.5 h-3.5 text-blue-400" />
             Digital Acceleration Manifesto
@@ -64,14 +64,14 @@ export const ScrollAnimatedSection = () => {
           <span className="text-[11px] font-mono text-white/40 tracking-wider hidden sm:inline-block">
             SCROLL TO ILLUMINATE
           </span>
-        </div>
+        </div> */}
 
         {/* Central Clean Word-by-Word Scrubbing Text (Zero Duplicate Layers) */}
         <div className="w-full max-w-5xl my-auto text-center px-4 sm:px-8">
           <p className="text-2xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-light leading-[1.3] sm:leading-[1.35] tracking-tight flex flex-wrap justify-center">
             {words.map((word, i) => {
-              const start = (i / words.length) * 0.8;
-              const end = start + (1 / words.length) * 0.8;
+              const start = (i / words.length) * 0.95;
+              const end = start + (1 / words.length) * 0.95;
               return (
                 <Word key={i} progress={scrollYProgress} range={[start, end]}>
                   {word}
@@ -84,7 +84,7 @@ export const ScrollAnimatedSection = () => {
         {/* Bottom Floating Stats & Progress Bar */}
         <div className="w-full max-w-6xl space-y-6">
           {/* 3 Metric Pills revealing towards end of scroll */}
-          <motion.div
+          {/* <motion.div
             style={{ opacity: statsOpacity, y: statsY }}
             className="grid grid-cols-1 sm:grid-cols-3 gap-4"
           >
@@ -111,10 +111,10 @@ export const ScrollAnimatedSection = () => {
               </div>
               <span className="font-mono text-sm font-bold text-white">4.8x ROAS</span>
             </div>
-          </motion.div>
+          </motion.div> */}
 
           {/* Bottom Progress Bar & Scroll Indicator */}
-          <div className="flex items-center justify-between border-t border-white/10 pt-4 text-xs font-mono text-white/40">
+          {/* <div className="flex items-center justify-between border-t border-white/10 pt-4 text-xs font-mono text-white/40">
             <div className="flex items-center gap-2">
               <ArrowDown className="w-3.5 h-3.5 animate-bounce text-blue-400" />
               <span className="tracking-wider">CONTINUE SCROLLING</span>
@@ -131,7 +131,7 @@ export const ScrollAnimatedSection = () => {
                 DEFT · 2026
               </span>
             </div>
-          </div>
+          </div> */}
         </div>
 
       </div>

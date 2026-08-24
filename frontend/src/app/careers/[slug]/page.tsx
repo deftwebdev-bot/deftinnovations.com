@@ -37,13 +37,11 @@ export default async function JobDetailPage({ params }: Props) {
   if (!job) notFound();
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-white text-[#0a0a0a]">
       <Navbar />
-      <main className="pt-32 pb-20">
+      <main>
         <JobDetailClient job={job} />
-        <div className="mt-20">
-          <CtaSection />
-        </div>
+        <CtaSection />
       </main>
       <Footer />
     </div>

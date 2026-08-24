@@ -14,12 +14,10 @@ class ContactLead(models.Model):
     company = models.CharField(max_length=255, blank=True)
     email = models.EmailField(max_length=255)
     phone = models.CharField(max_length=50, blank=True)
-    budget = models.CharField(max_length=100, blank=True)
-    service = models.CharField(max_length=100, blank=True)
+    service = models.CharField(max_length=255, blank=True, help_text="Service the client is interested in")
     message = models.TextField()
     
     status = models.CharField(max_length=50, choices=LEAD_STATUS_CHOICES, default="New")
-    notes = models.TextField(blank=True, help_text="Internal notes for sales team")
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
