@@ -1,9 +1,10 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
+import { MediaImage as Image } from "@/components/ui/MediaImage";
 import { FadeIn, LineReveal, ImageReveal } from "@/components/ui/Motion";
 import { Testimonial } from "@/lib/api";
+import { getMediaUrl } from "@/lib/api";
 import Link from "next/link";
 import { ArrowRight, Quote } from "lucide-react";
 
@@ -27,29 +28,32 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
     <section className="section bg-[#f8f9fa] text-[#0a0a0a] border-b border-black/[0.06]">
       <div className="container-xl space-y-16">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-black/[0.08]">
+        <div className="space-y-6 pb-6 border-b border-black/[0.08]">
           <FadeIn direction="up">
             <span className="text-xs font-mono font-semibold tracking-widest text-black/40 uppercase">
               Client Experiences
             </span>
           </FadeIn>
-          <h2 className="ttl-80 font-light text-[#0a0a0a] tracking-tight">
-            <LineReveal delay={0.1}>Featured Stories</LineReveal>
-          </h2>
-          <p className="text-lg text-black/60 font-light max-w-xl">
-            Discover authentic experiences, straight from the ambitious leaders we partner with.
-          </p>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <h2 className="ttl-80 font-light text-[#0a0a0a] tracking-tight">
+              <LineReveal delay={0.1}>Featured Stories</LineReveal>
+            </h2>
+            <div className="flex flex-col items-start gap-4 max-w-md">
+              <p className="text-base text-black/60 font-light">
+                Discover authentic experiences, straight from the ambitious leaders we partner with.
+              </p>
+              <FadeIn direction="up" delay={0.2}>
+                <Link
+                  href="/testimonials"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors group"
+                >
+                  <span>View all testimonials</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </FadeIn>
+            </div>
+          </div>
         </div>
-
-        <FadeIn direction="up" delay={0.2}>
-          <Link
-            href="/testimonials"
-            className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors group"
-          >
-            <span>View all testimonials</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </FadeIn>
 
         {/* 3-Col Stories Grid (WAC Style) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -61,7 +65,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
                 <div className="relative aspect-[16/10] w-full bg-neutral-100 overflow-hidden">
                   <ImageReveal className="w-full h-full">
                     <Image
-                      src={TESTIMONIAL_COVERS[idx % TESTIMONIAL_COVERS.length]}
+                      src={item.imageUrl ? getMediaUrl(item.imageUrl) : TESTIMONIAL_COVERS[idx % TESTIMONIAL_COVERS.length]}
                       alt={item.author}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"

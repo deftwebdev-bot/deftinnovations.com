@@ -2,9 +2,16 @@
 
 import React from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { ArrowRight, Globe } from "lucide-react";
 import { FadeIn, LineReveal } from "@/components/ui/Motion";
-import { AiOrbBg } from "@/components/ui/AiOrbBg";
+
+// Dynamic import with ssr:false ensures Three.js is never loaded during SSR,
+// keeping the initial page bundle lean and preventing WebGL errors in Node.
+const AiOrbBg = dynamic(
+  () => import("@/components/ui/AiOrbBg").then((m) => m.AiOrbBg),
+  { ssr: false, loading: () => null }
+);
 
 /* ── Section ───────────────────────────────────────────────── */
 export const GenAiBanner = () => {

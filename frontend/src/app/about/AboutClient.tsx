@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import Image from "next/image";
+import { MediaImage as Image } from "@/components/ui/MediaImage";
 import Link from "next/link";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { ArrowRight, Sparkles, ArrowUpRight, Award, Users, Compass, Layers, CheckCircle2 } from "lucide-react";

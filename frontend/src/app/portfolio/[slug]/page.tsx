@@ -1,10 +1,10 @@
 import React from "react";
-import Image from "next/image";
+import { MediaImage as Image } from "@/components/ui/MediaImage";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/navbar/Navbar";
 import { Footer } from "@/components/footer/Footer";
-import { getProjectBySlug, getProjects, getMediaUrl } from "@/lib/api";
+import { getProjectBySlug, getProjects, getMediaUrl, isYouTubeUrl, getYouTubeId } from "@/lib/api";
 import { FadeIn, LineReveal, ImageReveal } from "@/components/ui/Motion";
 import { CtaSection } from "@/components/home/CtaSection";
 import { ArrowRight, ArrowUpRight, CheckCircle2, Play } from "lucide-react";
@@ -47,6 +47,7 @@ export default async function CaseStudyPage({ params }: Props) {
                   fill
                   className="object-cover"
                   priority
+                  sizes="100vw"
                 />
               ) : (
                 <div className="absolute inset-0 bg-neutral-900" />
@@ -115,14 +116,26 @@ export default async function CaseStudyPage({ params }: Props) {
         {/* Hero media — image or video */}
         <section className="section bg-white">
           <div className="container-xl">
-            {project.videoUrl ? (
+            {project.videoUrl && isYouTubeUrl(project.videoUrl) ? (
               <div className="relative w-full aspect-video bg-neutral-100 border border-black/[0.06] overflow-hidden">
                 <iframe
-                  src={project.videoUrl}
+                  src={`https://www.youtube.com/embed/${getYouTubeId(project.videoUrl)}`}
                   className="absolute inset-0 w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                   title={project.title}
+                />
+              </div>
+            ) : project.videoUrl ? (
+              /* Direct video file (incl. proxied Google Drive links) */
+              <div className="relative w-full aspect-video bg-black overflow-hidden">
+                <video
+                  src={getMediaUrl(project.videoUrl)}
+                  poster={project.imageUrl ? getMediaUrl(project.imageUrl) : undefined}
+                  className="absolute inset-0 w-full h-full object-contain"
+                  controls
+                  playsInline
+                  preload="metadata"
                 />
               </div>
             ) : project.imageUrl ? (
@@ -202,7 +215,7 @@ export default async function CaseStudyPage({ params }: Props) {
                         {project.galleryImages.map((url, i) => (
                           <div key={i} className="relative h-64 overflow-hidden bg-neutral-100 border border-black/[0.06]">
                             <ImageReveal className="w-full h-full">
-                              <Image src={url} alt={`${project.title} asset ${i + 1}`} fill className="object-cover" sizes="50vw" />
+                              <Image src={getMediaUrl(url)} alt={`${project.title} asset ${i + 1}`} fill className="object-cover" sizes="50vw" />
                             </ImageReveal>
                           </div>
                         ))}

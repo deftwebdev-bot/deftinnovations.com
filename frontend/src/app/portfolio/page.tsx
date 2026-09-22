@@ -6,8 +6,7 @@ import { getProjects } from "@/lib/api";
 import { PortfolioListClient } from "./PortfolioListClient";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Case Studies & Portfolio — Deft Innovations",

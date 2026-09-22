@@ -34,11 +34,7 @@ class ProjectOut(BaseModel):
             if isinstance(r, dict):
                 parsed_results.append(MetricResult(metric=r.get("metric", ""), label=r.get("label", "")))
 
-        img = ""
-        if hasattr(instance, 'image') and instance.image and hasattr(instance.image, 'url'):
-            img = instance.image.url
-        elif hasattr(instance, 'image_url') and instance.image_url:
-            img = instance.image_url
+        img = instance.image or instance.image_url or ""
 
         client_id = None
         if hasattr(instance, 'client_ref') and instance.client_ref:

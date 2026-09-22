@@ -8,10 +8,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Take environment variables from .env file
 env = environ.Env(
-    DEBUG=(bool, True),
-    SECRET_KEY=(str, 'django-insecure-deft-innovations-secret-key-replace-in-prod'),
+    # Production-safe defaults: the server must be explicitly configured via .env
+    DEBUG=(bool, False),
+    SECRET_KEY=(str, ''),
     DATABASE_URL=(str, f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
-    ALLOWED_HOSTS=(list, ['*']),
+    ALLOWED_HOSTS=(list, []),
+    SECURE_SSL_REDIRECT=(bool, False),
+    SECURE_HSTS_SECONDS=(int, 31536000),
+    CSRF_TRUSTED_ORIGINS=(list, [
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'https://deftinnovations.com',
+        'https://www.deftinnovations.com',
+    ]),
     CORS_ALLOWED_ORIGINS=(list, [
         'http://localhost:3000',
         'http://127.0.0.1:3000',
@@ -29,6 +38,25 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
+# ─── Fail fast on insecure production config ──────────────────
+if not DEBUG:
+    from django.core.exceptions import ImproperlyConfigured
+
+    if not SECRET_KEY or 'insecure' in SECRET_KEY or 'change-this' in SECRET_KEY:
+        raise ImproperlyConfigured(
+            "SECRET_KEY must be set to a strong random value in production. "
+            "Generate one with: python -c \"from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())\""
+        )
+    if not ALLOWED_HOSTS:
+        raise ImproperlyConfigured(
+            "ALLOWED_HOSTS must list your production domain(s), e.g. "
+            "ALLOWED_HOSTS=deftinnovations.com,www.deftinnovations.com"
+        )
+    if not env('CORS_ALLOWED_ORIGINS'):
+        raise ImproperlyConfigured(
+            "CORS_ALLOWED_ORIGINS must list your frontend origin(s) in production."
+        )
+
 # Application definition
 INSTALLED_APPS = [
     'unfold',
@@ -41,8 +69,10 @@ INSTALLED_APPS = [
     
     # 3rd party
     'corsheaders',
+    'whitenoise.runserver_nostatic',
     
     # Local Apps
+    'core',
     'apps.blog',
     'apps.portfolio',
     'apps.services',
@@ -51,9 +81,13 @@ INSTALLED_APPS = [
     'apps.careers',
 ]
 
+if DEBUG:
+    INSTALLED_APPS.insert(0, 'debug_toolbar')
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -61,6 +95,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if DEBUG:
+    MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
 
 ROOT_URLCONF = 'core.urls'
 
@@ -87,6 +124,8 @@ ASGI_APPLICATION = 'core.asgi.application'
 DATABASES = {
     'default': env.db('DATABASE_URL')
 }
+# Keep DB connections open across requests (ignored by SQLite).
+DATABASES['default']['CONN_MAX_AGE'] = 600
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -255,4 +294,86 @@ UNFOLD = {
     },
 }
 
+# ─── Django Debug Toolbar ──────────────────────────────────────
+if DEBUG:
+    INTERNAL_IPS = env.list('INTERNAL_IPS', default=['127.0.0.1', 'localhost', '10.0.2.2'])
+
+    def show_toolbar(request):
+        # Never run toolbar on API, media, or static requests to ensure sub-millisecond response
+        path = request.path_info
+        if path.startswith('/api/') or path.startswith('/media/') or path.startswith('/static/'):
+            return False
+        # Do not run for non-HTML responses
+        accept = request.headers.get('Accept', '')
+        if 'text/html' not in accept and '*/*' not in accept:
+            return False
+        remote_addr = request.META.get('REMOTE_ADDR')
+        return remote_addr in INTERNAL_IPS or DEBUG
+
+    DEBUG_TOOLBAR_CONFIG = {
+        'SHOW_TOOLBAR_CALLBACK': show_toolbar,
+        'RESULTS_CACHE_SIZE': 20,
+    }
+
+# ─── Django Ninja API config ──────────────────────────────────
+# Anonymous rate limits (per IP) for the public API. The global 'anon' rate is
+# generous because the Next.js server itself fetches the API server-side;
+# the POST form endpoints get their own tight limits against spam.
+NINJA_DEFAULT_THROTTLE_RATES = {
+    "anon": "300/m",
+    "leads": "10/m",
+    "careers": "10/m",
+}
+
+# ─── Django Cache Framework (Django Core Cache) ───────────────
+# Local-memory cache for development; switch to Redis in production
+if DEBUG or not env('REDIS_URL', default=''):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'deft-core-cache',
+            'TIMEOUT': 3600,  # 1 hour default
+            'OPTIONS': {
+                'MAX_ENTRIES': 1000,
+            }
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': env('REDIS_URL'),
+            'TIMEOUT': 3600,
+            'OPTIONS': {
+                'MAX_ENTRIES': 2000,
+            }
+        }
+    }
+
+# ─── Security Headers ─────────────────────────────────────────
+X_FRAME_OPTIONS = 'DENY'
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
+# Behind a reverse proxy (nginx/Cloudflare), trust X-Forwarded-Proto so
+# request.is_secure() — and therefore the secure-cookie/SSL-redirect logic — works.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+CSRF_TRUSTED_ORIGINS = env('CSRF_TRUSTED_ORIGINS')
+
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = env('SECURE_SSL_REDIRECT')
+    _hsts = env('SECURE_HSTS_SECONDS')
+    if _hsts > 0:
+        SECURE_HSTS_SECONDS = _hsts
+        SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+        SECURE_HSTS_PRELOAD = True
+
+# ─── Static files via WhiteNoise (gzip/brotli + cache headers) ─
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+}
 

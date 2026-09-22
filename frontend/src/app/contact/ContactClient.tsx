@@ -4,7 +4,6 @@ import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/navbar/Navbar";
-import { Footer } from "@/components/footer/Footer";
 import { FadeIn } from "@/components/ui/Motion";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Mail, MapPin, Phone, Send, CheckCircle2, User, ChevronDown } from "lucide-react";
@@ -16,16 +15,16 @@ const LOCATIONS = [
     flag: "🇮🇳",
     address: "HiLITE Business Park, NH 66, Thondayad, Kozhikode, Pantheeramkavu, Kerala 673014",
     mapUrl: "https://maps.app.goo.gl/2MYs3mEwhr58vYG3A",
-    phones: ["+91 860 603 5050", "+91 8078 255 277"],
-    emails: ["Info@deftinnovations.in", "hr@deftinnovations.in"],
+    phones: ["+91 9496 464 650", "+91 8330 081 350"],
+    emails: ["sales@deftinnovations.in", "hr@deftinnovations.in"],
   },
   {
     country: "Nilambur",
     flag: "🇮🇳",
     address: "Chandakunnu, Nilambur, Kerala 679329",
     mapUrl: "https://maps.app.goo.gl/PPqUQP1f9cKZNbUdA",
-    phones: ["+91 860 603 5050", "+91 8078 255 277"],
-    emails: ["Info@deftinnovations.in", "hr@deftinnovations.in"],
+    phones: ["+91 9496 464 650", "+91 8330 081 350"],
+    emails: ["sales@deftinnovations.in", "hr@deftinnovations.in"],
   },
 ];
 
@@ -185,7 +184,7 @@ const Input: React.FC<{
   </div>
 );
 
-export function ContactClient() {
+export function ContactClient({ children }: { children?: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-white text-[#0a0a0a]">
       <Navbar />
@@ -313,7 +312,7 @@ export function ContactClient() {
           </div>
         </section>
       </main>
-      <Footer />
+      {children}
     </div>
   );
 }

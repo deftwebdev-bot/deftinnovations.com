@@ -93,8 +93,8 @@ To exercise these rights, please contact us using the information provided below
     title: "11. Contact Us",
     content: `If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us at:
 
-Email: info@deftinnovations.in
-Phone: +91 860 603 5050
+Email: sales@deftinnovations.in | hr@deftinnovations.in
+Phone: +91 9496 464 650 (Sales) | +91 8330 081 350 (HR)
 Address: HiLITE Business Park, NH 66, Thondayad, Kozhikode, Kerala 673014, India`,
   },
 ];

@@ -21,6 +21,7 @@ class ServiceOut(BaseModel):
     businessBenefits: List[str]
     processSteps: List[str]
     featuredStats: Optional[FeaturedStat] = None
+    featured: bool = False
     imageUrl: str = ""
 
     @classmethod
@@ -31,11 +32,7 @@ class ServiceOut(BaseModel):
                 label=instance.featured_stats.get("label", ""),
                 value=instance.featured_stats.get("value", "")
             )
-        img = ""
-        if hasattr(instance, "image") and instance.image and hasattr(instance.image, "url"):
-            img = instance.image.url
-        elif hasattr(instance, "image_url") and instance.image_url:
-            img = instance.image_url
+        img = instance.image or instance.image_url or ""
 
         cat_name = ""
         cat_id = ""
@@ -43,10 +40,7 @@ class ServiceOut(BaseModel):
         if hasattr(instance, "category") and instance.category:
             cat_name = instance.category.title
             cat_id = instance.category.slug
-            if hasattr(instance.category, 'image') and instance.category.image and hasattr(instance.category.image, 'url'):
-                cat_img = instance.category.image.url
-            elif hasattr(instance.category, 'image_url') and instance.category.image_url:
-                cat_img = instance.category.image_url
+            cat_img = instance.category.image or instance.category.image_url or ""
 
         return cls(
             id=instance.slug,
@@ -62,6 +56,7 @@ class ServiceOut(BaseModel):
             businessBenefits=instance.business_benefits or [],
             processSteps=instance.process_steps or [],
             featuredStats=stats,
+            featured=instance.featured,
             imageUrl=img,
         )
 
@@ -81,11 +76,7 @@ class ServiceCategoryOut(BaseModel):
             ServiceOut.from_model(s)
             for s in instance.services.all().order_by('order', 'title')
         ]
-        img = ""
-        if hasattr(instance, 'image') and instance.image and hasattr(instance.image, 'url'):
-            img = instance.image.url
-        elif hasattr(instance, 'image_url') and instance.image_url:
-            img = instance.image_url
+        img = instance.image or instance.image_url or ""
 
         return cls(
             id=str(instance.pk),

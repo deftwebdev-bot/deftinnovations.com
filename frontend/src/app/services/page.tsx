@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { MediaImage as Image } from "@/components/ui/MediaImage";
 import { Navbar } from "@/components/navbar/Navbar";
 import { Footer } from "@/components/footer/Footer";
 import { FadeIn, LineReveal } from "@/components/ui/Motion";
@@ -9,8 +9,7 @@ import { CtaSection } from "@/components/home/CtaSection";
 import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Capabilities & Services",
@@ -30,11 +29,12 @@ export default async function ServicesPage() {
         <section className="relative min-h-[45vh] flex items-end overflow-hidden">
           {/* Background image */}
           <Image
-            src="https://images.unsplash.com/photo-1689141047490-a0916682dcfd?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDd8Ym84alFLVGFFMFl8fGVufDB8fHx8fA%3D%3D"
+            src="https://images.unsplash.com/photo-1689141047490-a0916682dcfd?w=2400&auto=format&fit=crop&q=80"
             alt="Abstract swirl pattern"
             fill
             className="object-cover"
             priority
+            sizes="100vw"
           />
           {/* Dark overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
@@ -121,12 +121,13 @@ export default async function ServicesPage() {
                         {/* Image column */}
                         <div className={`lg:col-span-7 flex items-center justify-center ${isReversed ? "lg:order-1" : "lg:order-2"}`}>
                           {catImage ? (
-                            <div className="relative w-full aspect-[16/10] overflow-hidden bg-neutral-100 border border-black/[0.06]">
+                            <div className="relative w-full max-h-[75vh] flex items-center justify-center bg-neutral-50 border border-black/[0.06] overflow-hidden">
                               <Image
                                 src={getMediaUrl(catImage)}
                                 alt={category.title}
-                                fill
-                                className="object-cover"
+                                width={1200}
+                                height={800}
+                                className="w-full h-auto max-h-[75vh] object-contain"
                                 sizes="(max-width: 1024px) 100vw, 58vw"
                               />
                             </div>

@@ -30,12 +30,12 @@ class Project(models.Model):
     technologies_used = models.JSONField(default=list, help_text="List of strings: ['Next.js', 'Tailwind']")
     
     # Media
-    image = models.ImageField(upload_to="portfolio/", blank=True, null=True,
-                             verbose_name="Cover Image", help_text="Upload project image")
+    image = models.URLField(max_length=500, blank=True, null=True,
+                             verbose_name="Cover Image URL", help_text="Paste project cover image URL")
     image_url = models.URLField(max_length=500, blank=True, null=True,
                                 help_text="Fallback image URL")
     video_url = models.URLField(max_length=500, blank=True, null=True,
-                                help_text="Video URL (YouTube, Vimeo, etc.)")
+                                help_text="Paste a direct MP4 link or Google Drive sharing link. YouTube/Vimeo embed links do NOT work as video sources.")
     gallery_images = models.JSONField(default=list, blank=True, help_text="List of image URLs for project gallery")
     
     year = models.CharField(max_length=20, default="2025")

@@ -1,5 +1,5 @@
 import React from "react";
-import Image from "next/image";
+import { MediaImage as Image } from "@/components/ui/MediaImage";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/navbar/Navbar";
@@ -44,11 +44,12 @@ export default async function ArticlePage({ params }: Props) {
           {article.imageUrl ? (
             <>
               <Image
-                src={article.imageUrl}
+                src={getMediaUrl(article.imageUrl)}
                 alt={article.title}
                 fill
                 className="object-cover"
                 priority
+                sizes="100vw"
               />
               <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />
             </>
@@ -97,7 +98,7 @@ export default async function ArticlePage({ params }: Props) {
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="relative w-10 h-10 rounded-full overflow-hidden border border-black/10">
-                <Image src={article.author.avatarUrl} alt={article.author.name} fill className="object-cover" />
+                <Image src={getMediaUrl(article.author.avatarUrl)} alt={article.author.name} fill className="object-cover" sizes="40px" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-[#0a0a0a]">{article.author.name}</p>
@@ -168,7 +169,7 @@ export default async function ArticlePage({ params }: Props) {
                       <div className="relative w-24 h-24 shrink-0 overflow-hidden bg-neutral-100 border border-black/[0.06]">
                         <ImageReveal className="w-full h-full">
                           <Image
-                            src={r.imageUrl}
+                            src={getMediaUrl(r.imageUrl)}
                             alt={r.title}
                             fill
                             className="object-cover transition-transform duration-700 group-hover:scale-105"

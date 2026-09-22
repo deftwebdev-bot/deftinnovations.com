@@ -71,7 +71,17 @@ export function CareersClient({
     <>
       {/* ── Hero ─────────────────────────────────────────── */}
       <section className="relative min-h-[45vh] flex items-end overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#111] to-[#070707]" />
+        {/* Background image */}
+        <Image
+          src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=2400&auto=format&fit=crop&q=80"
+          alt="Team collaborating around a table"
+          fill
+          priority
+          className="object-cover"
+          sizes="100vw"
+        />
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#111]/90 to-[#070707]/80" />
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "40px 40px" }} />
 
         <div className="relative z-10 container-xl pt-32 sm:pt-40 pb-12 sm:pb-20 space-y-4">

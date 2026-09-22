@@ -54,8 +54,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
+      data-scroll-behavior="smooth"
       className={`${jakartaSans.variable} h-full antialiased`}
     >
+      <head>
+        {/* Warm connections to the API origin early — media, images and the
+            Drive proxy all live there, so the first fetch skips DNS+TCP+TLS. */}
+        <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"} />
+        <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"} />
+      </head>
       <body className="min-h-full flex flex-col bg-[#0a0a0a] text-white selection:bg-white selection:text-black">
         {children}
       </body>

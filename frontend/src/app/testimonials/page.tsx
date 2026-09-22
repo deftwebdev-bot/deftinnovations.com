@@ -6,8 +6,7 @@ import { getTestimonials } from "@/lib/api";
 import { TestimonialsListClient } from "./TestimonialsListClient";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Testimonials — Client Stories & Reviews",

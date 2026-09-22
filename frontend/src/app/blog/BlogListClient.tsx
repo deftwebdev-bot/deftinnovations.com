@@ -2,9 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { MediaImage as Image } from "@/components/ui/MediaImage";
 import { FadeIn, LineReveal, ImageReveal } from "@/components/ui/Motion";
-import { Article } from "@/lib/api";
+import { Article, getMediaUrl } from "@/lib/api";
 import { Search, Clock, ArrowRight } from "lucide-react";
 
 const CATEGORIES = ["All", "Digital Marketing", "Branding", "Web Development", "SEO", "Social Media", "Business Growth", "Technology"];
@@ -27,7 +27,17 @@ export function BlogListClient({ initialArticles }: { initialArticles: Article[]
     <>
       {/* Hero — dark background matching other pages */}
       <section className="relative min-h-[45vh] flex items-end overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#111] to-[#070707]" />
+        {/* Background image */}
+        <Image
+          src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=2400&auto=format&fit=crop&q=80"
+          alt="Editorial desk with notebook and laptop"
+          fill
+          priority
+          className="object-cover"
+          sizes="100vw"
+        />
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#111]/90 to-[#070707]/80" />
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "40px 40px" }} />
 
         <div className="relative z-10 container-xl pt-32 sm:pt-40 pb-12 sm:pb-20 space-y-4">
@@ -103,7 +113,7 @@ export function BlogListClient({ initialArticles }: { initialArticles: Article[]
                     <div className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-100 border border-black/[0.06]">
                       <ImageReveal className="w-full h-full">
                         <Image
-                          src={article.imageUrl}
+                          src={getMediaUrl(article.imageUrl)}
                           alt={article.title}
                           fill
                           className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -131,7 +141,7 @@ export function BlogListClient({ initialArticles }: { initialArticles: Article[]
                     {/* Author */}
                     <div className="flex items-center gap-2.5 pt-2">
                       <div className="relative w-5 h-5 rounded-full overflow-hidden border border-black/10">
-                        <Image src={article.author.avatarUrl} alt={article.author.name} fill className="object-cover" />
+                        <Image src={getMediaUrl(article.author.avatarUrl)} alt={article.author.name} fill className="object-cover" sizes="20px" />
                       </div>
                       <span className="text-xs text-black/45">{article.author.name}</span>
                     </div>

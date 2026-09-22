@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { MediaImage as Image } from "@/components/ui/MediaImage";
 import { ArrowUpRight } from "lucide-react";
 import { FadeIn, ImageReveal, LineReveal } from "@/components/ui/Motion";
 import { Project } from "@/lib/api";

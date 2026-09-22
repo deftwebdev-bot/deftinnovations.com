@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { MediaImage as Image } from "@/components/ui/MediaImage";
 import { FadeIn, ImageReveal } from "@/components/ui/Motion";
 import { Project } from "@/lib/api";
 import { getMediaUrl } from "@/lib/api";

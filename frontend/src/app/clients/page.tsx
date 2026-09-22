@@ -6,8 +6,7 @@ import { getTrustedBrands, getProjects } from "@/lib/api";
 import { ClientsListClient } from "./ClientsListClient";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Our Clients — Deft Innovations",

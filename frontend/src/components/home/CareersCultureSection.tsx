@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { MediaImage as Image } from "@/components/ui/MediaImage";
 import { ArrowRight } from "lucide-react";
 import { FadeIn, LineReveal } from "@/components/ui/Motion";
 import { TeamMember } from "@/lib/api";

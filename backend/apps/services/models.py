@@ -9,8 +9,8 @@ class ServiceCategory(models.Model):
     icon_name = models.CharField(max_length=50, default="TrendingUp",
                                  help_text="Lucide icon name, e.g. TrendingUp, Palette, Code2")
     description = models.TextField(blank=True, help_text="Optional category description")
-    image = models.ImageField(upload_to="services/categories/", blank=True, null=True,
-                             verbose_name="Category Image", help_text="Upload category cover image")
+    image = models.URLField(max_length=500, blank=True, null=True,
+                             verbose_name="Category Image URL", help_text="Paste category cover image URL")
     image_url = models.URLField(max_length=500, blank=True, null=True,
                                 help_text="Optional fallback image URL")
     order = models.PositiveIntegerField(default=0)
@@ -48,10 +48,16 @@ class Service(models.Model):
     featured_stats = models.JSONField(default=dict, blank=True,
                                       help_text="Object: {'label': '...', 'value': '...'}")
 
-    image = models.ImageField(upload_to="services/", blank=True, null=True,
-                             verbose_name="Cover Image", help_text="Upload service image")
+    image = models.URLField(max_length=500, blank=True, null=True,
+                             verbose_name="Cover Image URL", help_text="Paste service image URL")
     image_url = models.URLField(max_length=500, blank=True, null=True,
                                 help_text="Optional fallback image URL")
+
+    featured = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text="Featured services are highlighted on the homepage and listings",
+    )
 
     order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)

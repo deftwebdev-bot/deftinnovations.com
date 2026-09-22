@@ -99,8 +99,8 @@ We encourage you to review these terms periodically for any updates.`,
     title: "13. Contact Us",
     content: `If you have any questions about these Terms and Conditions, please contact us at:
 
-Email: info@deftinnovations.in
-Phone: +91 860 603 5050
+Email: sales@deftinnovations.in | hr@deftinnovations.in
+Phone: +91 9496 464 650 (Sales) | +91 8330 081 350 (HR)
 Address: HiLITE Business Park, NH 66, Thondayad, Kozhikode, Kerala 673014, India`,
   },
 ];

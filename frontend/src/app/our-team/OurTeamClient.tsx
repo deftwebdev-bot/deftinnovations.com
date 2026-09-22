@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
+import { MediaImage as Image } from "@/components/ui/MediaImage";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ArrowUpRight, X } from "lucide-react";
@@ -160,6 +160,9 @@ export function OurTeamClient({ team = [], gallery = [], articles = [] }: OurTea
                         src={src}
                         alt={`Life at Deft ${idx + 1}`}
                         fill
+                        // First two gallery photos are above the fold — eagerly load them
+                        priority={idx < 2}
+                        loading={idx < 2 ? "eager" : "lazy"}
                         className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                       />
@@ -299,6 +302,8 @@ export function OurTeamClient({ team = [], gallery = [], articles = [] }: OurTea
                     src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=85"
                     alt="Life at Deft"
                     fill
+                    priority
+                    loading="eager"
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 40vw"
                   />

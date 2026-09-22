@@ -1,9 +1,10 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
+import { MediaImage as Image } from "@/components/ui/MediaImage";
 import { FadeIn } from "@/components/ui/Motion";
 import { Testimonial } from "@/lib/api";
+import { getMediaUrl } from "@/lib/api";
 import { Quote, Star } from "lucide-react";
 
 const AVATAR_COVERS = [
@@ -52,7 +53,7 @@ export function TestimonialsListClient({
                   <div className="p-6 pb-0 flex items-center gap-4">
                     <div className="relative w-14 h-14 shrink-0 overflow-hidden border border-black/10">
                       <Image
-                        src={AVATAR_COVERS[idx % AVATAR_COVERS.length]}
+                        src={item.imageUrl ? getMediaUrl(item.imageUrl) : AVATAR_COVERS[idx % AVATAR_COVERS.length]}
                         alt={item.author}
                         fill
                         className="object-cover"

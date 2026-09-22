@@ -1,99 +1,203 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { MediaImage as Image } from "@/components/ui/MediaImage";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Volume2, VolumeX, ChevronLeft, ChevronRight } from "lucide-react";
-import { HeroContent, getMediaUrl } from "@/lib/api";
+import { HeroContent, getMediaUrl, getYouTubeId, isYouTubeUrl } from "@/lib/api";
 
 interface HeroCarouselProps {
   slides?: HeroContent[];
 }
 
+const DURATION = 7000; // 7s per slide
+
+/**
+ * HeroCarousel — performance notes:
+ *  - All MP4 slides are mounted ONCE as stacked, opacity-crossfaded <video>
+ *    layers. Previous versions remounted the active slide on every change,
+ *    which re-fetched the video (a visible black gap + wasted bandwidth).
+ *  - The upcoming slide's video is preloaded so transitions are instant.
+ *  - Inactive videos are paused (zero decode cost while off-screen).
+ *  - The progress strip is driven by a requestAnimationFrame loop that writes
+ *    widths directly to DOM nodes — no React re-render 60x/sec.
+ *  - YouTube slides still mount only while active (iframes can't be cheaply
+ *    preloaded or paused).
+ */
 export const HeroCarousel: React.FC<HeroCarouselProps> = ({ slides = [] }) => {
   const slideList = slides ?? [];
   const [currentIdx, setCurrentIdx] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
-  const [progress, setProgress] = useState(0);
+
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const barRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const rafRef = useRef<number | null>(null);
+  // Bumped whenever the progress loop should restart (tab visible again).
+  const [cycle, setCycle] = useState(0);
 
-  const DURATION = 7000; // 7s per slide
+  const count = slideList.length;
 
+  // ── Slide advance + progress loop (rAF, no React re-renders) ──
   useEffect(() => {
-    setProgress(0);
-    const interval = 100;
-    const step = (interval / DURATION) * 100;
+    if (count < 2) return;
 
-    const timer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          setCurrentIdx((curr) => (curr + 1) % slideList.length);
-          return 0;
+    // Static bars: fully-played slides left of current, empty right of it.
+    barRefs.current.forEach((bar, i) => {
+      if (!bar) return;
+      bar.style.width = i < currentIdx ? "100%" : i > currentIdx ? "0%" : "0%";
+    });
+
+    let start: number | null = null;
+    const tick = (now: number) => {
+      if (start === null) start = now;
+      const pct = Math.min(100, ((now - start) / DURATION) * 100);
+      const bar = barRefs.current[currentIdx];
+      if (bar) bar.style.width = `${pct}%`;
+      if (pct >= 100) {
+        setCurrentIdx((curr) => (curr + 1) % count);
+        return; // effect re-runs for the new index
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    };
+  }, [currentIdx, count, cycle]);
+
+  // ── Play active video, pause others, preload the next one ──
+  useEffect(() => {
+    videoRefs.current.forEach((vid, i) => {
+      if (!vid) return;
+      if (i === currentIdx) {
+        vid.muted = isMuted;
+        vid.preload = "auto";
+        const p = vid.play();
+        if (p) p.catch(() => {/* autoplay guard */});
+      } else {
+        vid.pause();
+        if (i === (currentIdx + 1) % count) {
+          // Warm the cache for the upcoming slide.
+          vid.preload = "auto";
+          if (vid.networkState === HTMLMediaElement.NETWORK_EMPTY) vid.load();
         }
-        return prev + step;
-      });
-    }, interval);
+      }
+    });
+  }, [currentIdx, count, isMuted]);
 
-    return () => clearInterval(timer);
-  }, [currentIdx, slideList.length]);
+  // ── Self-heal: if the active video gets paused by something external
+  // (embedder occlusion, device interruption), resume it once visible again.
+  useEffect(() => {
+    let lastResume = 0;
+    const onResume = () => {
+      const vid = videoRefs.current[currentIdx];
+      if (!vid || document.hidden) return;
+      const now = Date.now();
+      if (now - lastResume < 1000) return; // avoid fighting occlusion
+      lastResume = now;
+      const p = vid.play();
+      if (p) p.catch(() => {});
+    };
+    document.addEventListener("visibilitychange", onResume);
+    window.addEventListener("focus", onResume);
+    return () => {
+      document.removeEventListener("visibilitychange", onResume);
+      window.removeEventListener("focus", onResume);
+    };
+  }, [currentIdx]);
 
+  // ── Pause everything when the tab is hidden (battery / CPU) ──
+  useEffect(() => {
+    const onVis = () => {
+      const vid = videoRefs.current[currentIdx];
+      if (document.hidden) {
+        vid?.pause();
+        if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      } else {
+        const p = vid?.play();
+        if (p) p.catch(() => {});
+        setCycle((c) => c + 1); // restart the rAF progress loop fresh
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [currentIdx]);
+
+  const restartFrom = useCallback((idx: number) => {
+    setCurrentIdx(idx % Math.max(count, 1));
+  }, [count]);
+
+  const nextSlide = useCallback(() => restartFrom(currentIdx + 1), [currentIdx, restartFrom]);
+  const prevSlide = useCallback(
+    () => restartFrom((currentIdx - 1 + Math.max(count, 1)) % Math.max(count, 1)),
+    [currentIdx, restartFrom]
+  );
+
+  if (count === 0) return null;
   const activeSlide = slideList[currentIdx] || slideList[0];
-
-  const handleSelectSlide = (idx: number) => {
-    setCurrentIdx(idx);
-    setProgress(0);
-  };
-
-  const nextSlide = () => {
-    setCurrentIdx((curr) => (curr + 1) % slideList.length);
-    setProgress(0);
-  };
-
-  const prevSlide = () => {
-    setCurrentIdx((curr) => (curr - 1 + slideList.length) % slideList.length);
-    setProgress(0);
-  };
 
   return (
     <section className="relative w-full h-[100svh] min-h-[640px] max-h-[1080px] bg-[#0a0a0a] text-white overflow-hidden select-none">
-      {/* ── Slide Media (Video or Image) ── */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentIdx}
-          initial={{ opacity: 0, scale: 1.06 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute inset-0 z-0"
-        >
-          {activeSlide.videoUrl ? (
-            <video
-              ref={(el) => { videoRefs.current[currentIdx] = el; }}
-              src={getMediaUrl(activeSlide.videoUrl)}
-              poster={activeSlide.heroImageUrl ? getMediaUrl(activeSlide.heroImageUrl) : undefined}
-              autoPlay
-              muted={isMuted}
-              loop
-              playsInline
-              className="w-full h-full object-cover"
-            />
-          ) : activeSlide.heroImageUrl ? (
-            <Image
-              src={getMediaUrl(activeSlide.heroImageUrl)}
-              alt={activeSlide.headlinePrimary}
-              fill
-              priority
-              className="object-cover"
-              sizes="100vw"
-            />
-          ) : null}
+      {/* ── Slide Media — all layers stay mounted; active one is on top ── */}
+      {slideList.map((slide, idx) => {
+        const isActive = idx === currentIdx;
+        const isYouTube = !!slide.videoUrl && isYouTubeUrl(slide.videoUrl);
 
-          {/* Cinematic overlay gradients */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-black/30" />
-          <div className="absolute inset-0 bg-black/25" />
-        </motion.div>
-      </AnimatePresence>
+        return (
+          <div
+            key={idx}
+            className="absolute inset-0 transition-opacity duration-[1100ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={{
+              opacity: isActive ? 1 : 0,
+              zIndex: isActive ? 1 : 0,
+              pointerEvents: "none",
+            }}
+            aria-hidden={!isActive}
+          >
+            {isYouTube ? (
+              /* YouTube iframe embed — mounted only while active */
+              isActive && (
+                <div className="absolute inset-0 overflow-hidden">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${getYouTubeId(slide.videoUrl!)}?autoplay=1&mute=1&loop=1&playlist=${getYouTubeId(slide.videoUrl!)}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&disablekb=1&fs=0`}
+                    title={slide.headlinePrimary}
+                    allow="autoplay; encrypted-media"
+                    className="absolute top-1/2 left-1/2 w-[177.78vh] h-[100vh] -translate-x-1/2 -translate-y-1/2"
+                    style={{ border: "none" }}
+                  />
+                </div>
+              )
+            ) : slide.videoUrl ? (
+              /* Direct MP4 — mounted once, crossfaded, never re-fetched */
+              <video
+                ref={(el) => { videoRefs.current[idx] = el; }}
+                src={getMediaUrl(slide.videoUrl)}
+                poster={slide.heroImageUrl ? getMediaUrl(slide.heroImageUrl) : undefined}
+                muted={isMuted}
+                loop
+                playsInline
+                preload={idx === 0 ? "auto" : "metadata"}
+                className="w-full h-full object-cover"
+              />
+            ) : slide.heroImageUrl ? (
+              <Image
+                src={getMediaUrl(slide.heroImageUrl)}
+                alt={slide.headlinePrimary}
+                fill
+                priority={idx === 0}
+                className="object-cover"
+                sizes="100vw"
+              />
+            ) : null}
+
+            {/* Cinematic overlay gradients */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-black/30" />
+            <div className="absolute inset-0 bg-black/25" />
+          </div>
+        );
+      })}
 
       {/* ── Top Badge / Mute Control ── */}
       <div className="absolute top-28 left-0 right-0 z-20">
@@ -103,7 +207,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ slides = [] }) => {
             {activeSlide.badgeText || "Experiences Powered by Intelligence"}
           </div>
 
-          {activeSlide.videoUrl && (
+          {(activeSlide.videoUrl || slideList.some((s) => s.videoUrl)) && (
             <button
               onClick={() => setIsMuted(!isMuted)}
               className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md border border-white/15 flex items-center justify-center text-white/80 hover:text-white hover:border-white/30 transition-all"
@@ -139,19 +243,13 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ slides = [] }) => {
               </p>
 
               <div className="flex flex-wrap items-center gap-4 pt-2">
-                <Link
-                  href={activeSlide.primaryCtaLink || "/contact"}
-                  className="btn-primary group"
-                >
+                <Link href={activeSlide.primaryCtaLink || "/contact"} className="btn-primary group">
                   <span>{activeSlide.primaryCtaText || "Start a Project"}</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
 
                 {activeSlide.secondaryCtaText && (
-                  <Link
-                    href={activeSlide.secondaryCtaLink || "/portfolio"}
-                    className="btn-ghost"
-                  >
+                  <Link href={activeSlide.secondaryCtaLink || "/portfolio"} className="btn-ghost">
                     {activeSlide.secondaryCtaText}
                   </Link>
                 )}
@@ -161,38 +259,31 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ slides = [] }) => {
         </div>
       </div>
 
-      {/* ── WAC-style Bottom Thumbnail & Progress Nav Strip ── */}
+      {/* ── Bottom Progress Nav Strip ── */}
       <div className="absolute bottom-6 left-0 right-0 z-20">
         <div className="container-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t border-white/10 pt-4">
-          {/* Slide Progress Indicators */}
+          {/* Slide Progress Indicators — widths written directly by rAF */}
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            {slideList.map((slide, idx) => (
+            {slideList.map((_, idx) => (
               <button
                 key={idx}
-                onClick={() => handleSelectSlide(idx)}
+                onClick={() => restartFrom(idx)}
                 className="group relative flex-1 sm:w-28 h-1 bg-white/20 rounded-full overflow-hidden transition-all"
                 aria-label={`Slide ${idx + 1}`}
               >
                 <div
-                  className={`h-full bg-white transition-all ${
-                    idx === currentIdx
-                      ? "duration-100"
-                      : idx < currentIdx
-                      ? "w-full"
-                      : "w-0"
-                  }`}
-                  style={{
-                    width: idx === currentIdx ? `${progress}%` : idx < currentIdx ? "100%" : "0%",
-                  }}
+                  ref={(el) => { barRefs.current[idx] = el; }}
+                  className="h-full bg-white"
+                  style={{ width: idx === currentIdx ? "0%" : idx < currentIdx ? "100%" : "0%" }}
                 />
               </button>
             ))}
           </div>
 
-          {/* Slide Thumbnail Strip & Counter */}
+          {/* Slide Counter & Controls */}
           <div className="hidden md:flex items-center gap-4">
             <span className="text-xs font-mono text-white/50">
-              {String(currentIdx + 1).padStart(2, "0")} / {String(slideList.length).padStart(2, "0")}
+              {String(currentIdx + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
             </span>
 
             <div className="flex items-center gap-2">

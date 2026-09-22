@@ -1,51 +1,58 @@
-"use client";
-
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { DeftLogo } from "@/components/ui/DeftLogo";
-import { ArrowUpRight, CheckCircle2, Mail, Phone, MapPin } from "lucide-react";
-import { LinkedinIcon, TwitterIcon, FacebookIcon, InstagramIcon } from "@/components/ui/SocialIcons";
-
-const NAV = {
-  Company: [
-    { name: "About Agency", href: "/about" },
-    { name: "Our Team & Life", href: "/our-team" },
-    { name: "Our Services", href: "/services" },
-    { name: "Our Clients", href: "/clients" },
-    { name: "Case Studies", href: "/portfolio" },
-    { name: "Testimonials", href: "/testimonials" },
-    { name: "Editorial Journal", href: "/blog" },
-    { name: "Careers & Hiring", href: "/careers" },
-    { name: "Contact", href: "/contact" },
-  ],
-  Services: [
-    { name: "Digital Marketing", href: "/services#digital-marketing" },
-    { name: "Brand Architecture", href: "/services#branding" },
-    { name: "Next.js Development", href: "/services#web-development" },
-    { name: "Performance Ads", href: "/services#performance-marketing" },
-    { name: "Technical SEO", href: "/services#seo" },
-    { name: "Social Strategy", href: "/services#social-media-marketing" },
-  ],
-};
+import { Mail, Phone, MapPin } from "lucide-react";
+import { LinkedinIcon, YoutubeIcon, FacebookIcon, InstagramIcon } from "@/components/ui/SocialIcons";
+import { NewsletterForm } from "./NewsletterForm";
+import { Service } from "@/lib/api";
 
 const SOCIALS = [
-  { icon: LinkedinIcon, href: "https://linkedin.com", label: "LinkedIn" },
-  { icon: TwitterIcon,  href: "https://twitter.com",  label: "Twitter / X" },
-  { icon: InstagramIcon, href: "https://instagram.com", label: "Instagram" },
-  { icon: FacebookIcon, href: "https://facebook.com", label: "Facebook" },
+  { icon: LinkedinIcon,  href: "https://www.linkedin.com/company/deftinnovations", label: "LinkedIn" },
+  { icon: YoutubeIcon,   href: "https://www.youtube.com/@deftinnovations/",        label: "YouTube" },
+  { icon: InstagramIcon, href: "https://www.instagram.com/deftinnovations/",       label: "Instagram" },
+  { icon: FacebookIcon,  href: "https://www.facebook.com/deftinnovations",         label: "Facebook" },
 ];
 
-export const Footer = () => {
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+const COMPANY_LINKS = [
+  { name: "About Agency", href: "/about" },
+  { name: "Our Team & Life", href: "/our-team" },
+  { name: "Our Services", href: "/services" },
+  { name: "Our Clients", href: "/clients" },
+  { name: "Case Studies", href: "/portfolio" },
+  { name: "Testimonials", href: "/testimonials" },
+  { name: "Editorial Journal", href: "/blog" },
+  { name: "Careers & Hiring", href: "/careers" },
+  { name: "Contact", href: "/contact" },
+];
 
-  const handleSub = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-    setSent(true);
-    setEmail("");
-    setTimeout(() => setSent(false), 5000);
-  };
+/** Static fallback if the API is unreachable — real slugs, real detail pages. */
+const FALLBACK_SERVICES: Service[] = [
+  { id: "website-development", slug: "website-development", title: "Website Development" },
+  { id: "digital-marketing-strategy", slug: "digital-marketing-strategy", title: "Digital Marketing Strategy" },
+  { id: "google-ads", slug: "google-ads", title: "Google Ads" },
+  { id: "technical-seo-organic-growth", slug: "technical-seo-organic-growth", title: "SEO & Organic Growth" },
+  { id: "brand-identity-systems", slug: "brand-identity-systems", title: "Brand Identity Systems" },
+  { id: "video-production", slug: "video-production", title: "Video Production" },
+] as Service[];
+
+const SERVICES_API_URL = `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/api/v1/services/`;
+
+async function getFooterServices(): Promise<Service[]> {
+  try {
+    const res = await fetch(SERVICES_API_URL, {
+      next: { revalidate: 300, tags: ["services"] },
+    });
+    if (!res.ok) return FALLBACK_SERVICES;
+    const all: Service[] = await res.json();
+    const featured = all.filter((s) => s.featured);
+    return (featured.length > 0 ? featured : all).slice(0, 6);
+  } catch {
+    return FALLBACK_SERVICES;
+  }
+}
+
+export const Footer = async () => {
+  const services = await getFooterServices();
 
   return (
     <footer className="bg-[#060606] border-t border-white/[0.06] pt-20 pb-10">
@@ -76,40 +83,55 @@ export const Footer = () => {
             </div>
           </div>
 
-          {/* Nav cols */}
-          {Object.entries(NAV).map(([group, links]) => (
-            <div key={group} className="lg:col-span-2 space-y-5">
-              <h3 className="text-label text-white/30">{group}</h3>
-              <ul className="space-y-3">
-                {links.map(({ name, href }) => (
-                  <li key={name}>
-                    <Link
-                      href={href}
-                      className="text-sm text-white/50 hover:text-white transition-colors duration-200"
-                    >
-                      {name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/* Company col */}
+          <div className="lg:col-span-2 space-y-5">
+            <h3 className="text-label text-white/30">Company</h3>
+            <ul className="space-y-3">
+              {COMPANY_LINKS.map(({ name, href }) => (
+                <li key={name}>
+                  <Link
+                    href={href}
+                    className="text-sm text-white/50 hover:text-white transition-colors duration-200"
+                  >
+                    {name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Services col — dynamic, links to each service's detail page */}
+          <div className="lg:col-span-2 space-y-5">
+            <h3 className="text-label text-white/30">Services</h3>
+            <ul className="space-y-3">
+              {services.map((service) => (
+                <li key={service.slug}>
+                  <Link
+                    href={`/services/${service.slug}`}
+                    className="text-sm text-white/50 hover:text-white transition-colors duration-200"
+                  >
+                    {service.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
 
           {/* Contact col */}
           <div className="lg:col-span-4 space-y-5">
             <h3 className="text-label text-white/30">Get in Touch</h3>
             <div className="space-y-3">
-              <a href="mailto:info@deftinnovations.in" className="flex items-center gap-2.5 text-sm text-white/50 hover:text-white transition-colors">
-                <Mail className="w-4 h-4 text-white/30" /> info@deftinnovations.in
+              <a href="mailto:sales@deftinnovations.in" className="flex items-center gap-2.5 text-sm text-white/50 hover:text-white transition-colors">
+                <Mail className="w-4 h-4 text-white/30" /> sales@deftinnovations.in
               </a>
               <a href="mailto:hr@deftinnovations.in" className="flex items-center gap-2.5 text-sm text-white/50 hover:text-white transition-colors">
                 <Mail className="w-4 h-4 text-white/30" /> hr@deftinnovations.in
               </a>
-              <a href="tel:+918606035050" className="flex items-center gap-2.5 text-sm text-white/50 hover:text-white transition-colors">
-                <Phone className="w-4 h-4 text-white/30" /> +91 860 603 5050
+              <a href="tel:+919496464650" className="flex items-center gap-2.5 text-sm text-white/50 hover:text-white transition-colors">
+                <Phone className="w-4 h-4 text-white/30" /> +91 9496 464 650
               </a>
-              <a href="tel:+918078255277" className="flex items-center gap-2.5 text-sm text-white/50 hover:text-white transition-colors">
-                <Phone className="w-4 h-4 text-white/30" /> +91 8078 255 277
+              <a href="tel:+918330081350" className="flex items-center gap-2.5 text-sm text-white/50 hover:text-white transition-colors">
+                <Phone className="w-4 h-4 text-white/30" /> +91 8330 081 350
               </a>
             </div>
             <div className="space-y-2 pt-2 border-t border-white/[0.06]">
@@ -122,28 +144,7 @@ export const Footer = () => {
                 <span>Chandakunnu, Nilambur, Kerala 679329</span>
               </div>
             </div>
-            <form onSubmit={handleSub} className="relative pt-3">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Subscribe to newsletter"
-                required
-                className="w-full bg-white/[0.04] border border-white/10 rounded-full py-3 pl-5 pr-14 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-white/30 transition-colors"
-              />
-              <button
-                type="submit"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white text-black flex items-center justify-center hover:bg-white/90 transition-colors"
-                aria-label="Subscribe"
-              >
-                <ArrowUpRight className="w-4 h-4" />
-              </button>
-            </form>
-            {sent && (
-              <p className="flex items-center gap-2 text-xs text-emerald-400 font-mono">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Subscribed!
-              </p>
-            )}
+            <NewsletterForm />
           </div>
         </div>
 

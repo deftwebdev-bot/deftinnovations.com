@@ -9,10 +9,10 @@ class HeroContent(models.Model):
     primary_cta_link = models.CharField(max_length=255, default="/contact")
     secondary_cta_text = models.CharField(max_length=100, default="View Work")
     secondary_cta_link = models.CharField(max_length=255, default="/portfolio")
-    video_file = models.FileField(upload_to="hero/videos/", blank=True, null=True, verbose_name="Hero Video", help_text="Upload an MP4 video for this hero slide")
-    photo = models.ImageField(upload_to="hero/", blank=True, null=True, verbose_name="Background Image", help_text="Upload custom background image")
+    video_file = models.URLField(max_length=500, blank=True, null=True, verbose_name="Hero Video URL", help_text="Paste a direct MP4 link, or a Google Drive sharing link. Do NOT use YouTube/Vimeo embed links.")
+    photo = models.URLField(max_length=500, blank=True, null=True, verbose_name="Background Image URL", help_text="Paste background image URL")
     order = models.PositiveIntegerField(default=0)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -24,17 +24,6 @@ class HeroContent(models.Model):
     def __str__(self):
         return f"Hero: {self.headline_primary} (Active: {self.is_active})"
 
-    @property
-    def media_url(self):
-        if self.photo and hasattr(self.photo, 'url'):
-            return self.photo.url
-        return ""
-
-    @property
-    def video_file_url(self):
-        if self.video_file and hasattr(self.video_file, 'url'):
-            return self.video_file.url
-        return ""
 
 INDUSTRY_CHOICES = [
     ("Fintech", "Fintech"),
@@ -54,12 +43,12 @@ INDUSTRY_CHOICES = [
 class TrustedBrand(models.Model):
     name = models.CharField(max_length=150, help_text="Brand or Client name (e.g. NEXUS GLOBAL CAPITAL)")
     industry = models.CharField(max_length=100, choices=INDUSTRY_CHOICES, blank=True, help_text="Client industry for filtering")
-    logo = models.ImageField(upload_to="brands/", blank=True, null=True, verbose_name="Brand Logo", help_text="Upload brand logo file from your system")
+    logo = models.URLField(max_length=500, blank=True, null=True, verbose_name="Brand Logo URL", help_text="Paste brand logo image URL")
     logo_url = models.URLField(max_length=500, blank=True, help_text="Optional logo image URL")
     website_url = models.URLField(max_length=500, blank=True, help_text="Optional brand website URL")
     is_featured = models.BooleanField(default=False, db_index=True, help_text="Show on landing page clients section")
     order = models.PositiveIntegerField(default=0)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, db_index=True)
 
     class Meta:
         ordering = ['order', 'name']
@@ -69,18 +58,13 @@ class TrustedBrand(models.Model):
     def __str__(self):
         return self.name
 
-    @property
-    def logo_src(self):
-        if self.logo and hasattr(self.logo, 'url'):
-            return self.logo.url
-        return self.logo_url or ""
 
 class TeamMember(models.Model):
     name = models.CharField(max_length=150)
     role = models.CharField(max_length=150)
-    photo = models.ImageField(upload_to="team/", blank=True, null=True, verbose_name="Photo", help_text="Upload a photo from your computer")
+    photo = models.URLField(max_length=500, blank=True, null=True, verbose_name="Photo URL", help_text="Paste team member photo URL")
     order = models.PositiveIntegerField(default=0)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, db_index=True)
 
     class Meta:
         ordering = ['order', 'name']
@@ -90,16 +74,11 @@ class TeamMember(models.Model):
     def __str__(self):
         return f"{self.name} - {self.role}"
 
-    @property
-    def photo_url(self):
-        if self.photo and hasattr(self.photo, 'url'):
-            return self.photo.url
-        return ""
 
 class CultureGallery(models.Model):
-    photo = models.ImageField(upload_to="gallery/", verbose_name="Photo", help_text="Upload gallery image")
+    photo = models.URLField(max_length=500, blank=True, null=True, verbose_name="Photo URL", help_text="Paste gallery image URL")
     order = models.PositiveIntegerField(default=0)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -108,15 +87,7 @@ class CultureGallery(models.Model):
         verbose_name_plural = 'Gallery (Life at Deft Collage)'
 
     def __str__(self):
-        if self.photo:
-            return f"Gallery Photo #{self.id} ({self.photo.name})"
         return f"Gallery Photo #{self.id}"
-
-    @property
-    def photo_url(self):
-        if self.photo and hasattr(self.photo, 'url'):
-            return self.photo.url
-        return ""
 
 class Testimonial(models.Model):
     quote = models.TextField()
@@ -126,6 +97,9 @@ class Testimonial(models.Model):
     logo_text = models.CharField(max_length=100, default="CLIENT")
     metric = models.CharField(max_length=50, blank=True, help_text="e.g. +320%")
     metric_label = models.CharField(max_length=100, blank=True, help_text="e.g. Lead Conversion Growth")
+    image_url = models.URLField(max_length=500, blank=True,
+                                verbose_name="Profile Photo URL",
+                                help_text="Profile/cover photo URL (e.g. Unsplash, or an uploaded media path like testimonials/jane.jpg)")
     order = models.PositiveIntegerField(default=0)
 
     class Meta:

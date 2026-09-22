@@ -24,11 +24,15 @@ export const AiOrbBg = ({ className = "" }: { className?: string }) => {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // Cap at 1.0 — this is a blurred ambient background, not a hero detail.
+    // Retina (2×) rendering here costs 4× the fill rate for zero visible gain.
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.0));
     mount.appendChild(renderer.domElement);
 
     // ── Orb geometry + custom shader material ───────────────
-    const geometry = new THREE.SphereGeometry(7.4, 128, 128);
+    // 48 segments is visually identical to 96 on a blurred background orb
+    // but uses ~75% fewer vertices — major GPU vertex processing savings.
+    const geometry = new THREE.SphereGeometry(7.4, 48, 48);
 
     const uniforms = {
       uTime: { value: 0 },
@@ -142,24 +146,57 @@ export const AiOrbBg = ({ className = "" }: { className?: string }) => {
     const orb = new THREE.Mesh(geometry, material);
     scene.add(orb);
 
-    // ── Animation loop (infinite) ────────────────────────────
+    // ── Animation loop (pauses when scrolled off-screen / tab hidden) ──
     let frameId: number;
-    const clock = new THREE.Clock();
+    let running = false;
+    let inView = true;
+    const timer = new THREE.Timer();
 
     const animate = () => {
-      const elapsed = clock.getElapsedTime();
+      timer.update();
+      const elapsed = timer.getElapsed();
       uniforms.uTime.value = elapsed;
 
-      // Continuous multi-axis spin — bumped up from before for a
-      // clearly-visible, faster rotation.
-      orb.rotation.y = elapsed * 0.3;
-      orb.rotation.x = Math.sin(elapsed * 0.2) * 0.28;
-      orb.rotation.z = Math.cos(elapsed * 0.15) * 0.16;
+      // Continuous multi-axis spin — smooth and visible.
+      orb.rotation.y = elapsed * 0.25;
+      orb.rotation.x = Math.sin(elapsed * 0.17) * 0.28;
+      orb.rotation.z = Math.cos(elapsed * 0.12) * 0.16;
 
       renderer.render(scene, camera);
       frameId = requestAnimationFrame(animate);
     };
-    animate();
+
+    const start = () => {
+      if (running || document.hidden || !inView) return;
+      running = true;
+      frameId = requestAnimationFrame(animate);
+    };
+
+    const stop = () => {
+      if (!running) return;
+      running = false;
+      cancelAnimationFrame(frameId);
+    };
+
+    // Only render while the section is near the viewport.
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting;
+        if (inView) start();
+        else stop();
+      },
+      { rootMargin: "100px" }
+    );
+    io.observe(mount);
+
+    // Stop rendering entirely when the tab is hidden.
+    const onVis = () => {
+      if (document.hidden) stop();
+      else start();
+    };
+    document.addEventListener("visibilitychange", onVis);
+
+    start();
 
     // ── Resize handling ──────────────────────────────────────
     const handleResize = () => {
@@ -177,7 +214,9 @@ export const AiOrbBg = ({ className = "" }: { className?: string }) => {
 
     // ── Cleanup ───────────────────────────────────────────────
     return () => {
-      cancelAnimationFrame(frameId);
+      stop();
+      io.disconnect();
+      document.removeEventListener("visibilitychange", onVis);
       window.removeEventListener("resize", handleResize);
       ro.disconnect();
       geometry.dispose();

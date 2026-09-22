@@ -11,6 +11,7 @@ import { TestimonialsSection } from "@/components/home/TestimonialsSection";
 import { CareersCultureSection } from "@/components/home/CareersCultureSection";
 import { InsightsSection } from "@/components/home/InsightsSection";
 import { CtaSection } from "@/components/home/CtaSection";
+import { LazySection } from "@/components/ui/LazySection";
 import {
   getHeroSlides,
   getTrustedBrands,
@@ -22,8 +23,7 @@ import {
   getArticles,
 } from "@/lib/api";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 export default async function HomePage() {
   const [heroSlides, brands, stats, services, projects, testimonials, team, articles] = await Promise.all([
@@ -44,35 +44,53 @@ export default async function HomePage() {
         {/* 1. Fullscreen Multi-Slide Video Hero Carousel */}
         <HeroCarousel slides={heroSlides} />
 
-        {/* 2. Interactive Scroll-Animated Manifesto & Expanding Video Frame */}
+        {/* 2. Interactive Scroll-Animated Manifesto */}
         <ScrollAnimatedSection />
 
-        {/* 3. Case Studies (White BG - Square 1:1 Aspect Cards) */}
-        <CaseStudiesSection projects={projects} />
+        {/* 3. Case Studies */}
+        <LazySection>
+          <CaseStudiesSection projects={projects} />
+        </LazySection>
 
-        {/* 3. Our Story & Numbers (Light Gray BG - Floating Stats) */}
-        <OurStorySection stats={stats} />
+        {/* 4. Our Story & Numbers */}
+        <LazySection>
+          <OurStorySection stats={stats} />
+        </LazySection>
 
-        {/* 4. What We Do Capabilities (Dark Visual Photo Cards) */}
-        <WhatWeDoSection services={services} />
+        {/* 5. What We Do Capabilities */}
+        <LazySection>
+          <WhatWeDoSection services={services} />
+        </LazySection>
 
-        {/* 5. Gen AI & Agentic Solutions Showcase Banner */}
-        <GenAiBanner />
+        {/* 6. Gen AI Banner (contains heavy Three.js) */}
+        <LazySection>
+          <GenAiBanner />
+        </LazySection>
 
-        {/* 6. Clients & Brand Partnerships (White BG - 5-Col Grid) */}
-        <ClientsSection brands={brands} />
+        {/* 7. Clients & Brand Partnerships */}
+        <LazySection>
+          <ClientsSection brands={brands} />
+        </LazySection>
 
-        {/* 7. Featured Stories / Video Testimonials (3-Col Story Cards) */}
-        <TestimonialsSection testimonials={testimonials} />
+        {/* 8. Featured Stories / Testimonials */}
+        <LazySection>
+          <TestimonialsSection testimonials={testimonials} />
+        </LazySection>
 
-        {/* 8. Careers / Life at Deft ("You Will Like It Here!" + Rotating Stamp) */}
-        <CareersCultureSection team={team} />
+        {/* 9. Careers / Life at Deft */}
+        <LazySection>
+          <CareersCultureSection team={team} />
+        </LazySection>
 
-        {/* 9. Insights / Blog Journal (3-Col Latest Thought Leadership) */}
-        <InsightsSection articles={articles} />
+        {/* 10. Insights / Blog Journal */}
+        <LazySection>
+          <InsightsSection articles={articles} />
+        </LazySection>
 
-        {/* 10. Take The Digital Leap CTA (High-Contrast Dark Banner) */}
-        <CtaSection />
+        {/* 11. CTA */}
+        <LazySection>
+          <CtaSection />
+        </LazySection>
       </main>
       <Footer />
     </div>

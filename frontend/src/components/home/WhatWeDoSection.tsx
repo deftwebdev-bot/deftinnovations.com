@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { MediaImage as Image } from "@/components/ui/MediaImage";
 import { ArrowRight } from "lucide-react";
 import { FadeIn, LineReveal, ImageReveal } from "@/components/ui/Motion";
 import { Service } from "@/lib/api";
@@ -25,7 +25,9 @@ export const WhatWeDoSection: React.FC<WhatWeDoSectionProps> = ({
   services = [],
 }) => {
   const serviceList = services ?? [];
-  const displayServices = serviceList.slice(0, 6);
+  // Show only featured services; fall back to the first 6 while nothing is flagged yet
+  const featuredOnly = serviceList.filter((s) => s.featured);
+  const displayServices = (featuredOnly.length > 0 ? featuredOnly : serviceList).slice(0, 6);
 
   return (
     <section className="section bg-white text-[#0a0a0a]" style={{borderColor: 'rgba(0,0,0,0.06)'}}>
@@ -65,7 +67,7 @@ export const WhatWeDoSection: React.FC<WhatWeDoSectionProps> = ({
             return (
               <FadeIn key={service.id || idx} direction="up" delay={idx * 0.07}>
                 <Link
-                  href={`/services#${service.slug}`}
+                  href={`/services/${service.slug}`}
                   className="group block relative rounded-2xl overflow-hidden aspect-[16/10] sm:aspect-[16/9] border border-black/10 bg-gray-100"
                 >
                   {/* Photo Background */}

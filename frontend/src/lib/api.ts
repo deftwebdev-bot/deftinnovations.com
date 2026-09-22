@@ -64,6 +64,7 @@ export interface Service {
   businessBenefits: string[];
   processSteps: string[];
   featuredStats?: FeaturedStat | null;
+  featured: boolean;
   imageUrl: string;
 }
 
@@ -94,6 +95,7 @@ export interface Testimonial {
   logoText: string;
   metric?: string;
   metricLabel?: string;
+  imageUrl: string;
 }
 
 export interface TrustStat {
@@ -174,38 +176,132 @@ export interface ContactPayload {
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 /**
- * Resolve full URL for media assets (images, uploads, etc.)
+ * Extract Google Drive file ID from various URL formats
  */
-export function getMediaUrl(url?: string | null): string {
-  if (!url) return "";
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  if (url.startsWith("/media/")) return `${API_URL}${url}`;
-  if (url.startsWith("/")) return url;
-  return `${API_URL}/media/${url}`;
+function getGoogleDriveFileId(url: string): string | null {
+  // https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+  let match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (match) return match[1];
+
+  // https://drive.google.com/open?id=FILE_ID
+  match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (match) return match[1];
+
+  // https://drive.google.com/uc?id=FILE_ID
+  match = url.match(/\/uc\?.*id=([a-zA-Z0-9_-]+)/);
+  if (match) return match[1];
+
+  return null;
 }
 
 /**
- * Fetch from backend API with graceful fallback on failure
+ * Detect if a URL is a YouTube video and extract the video ID.
+ * Supports: youtube.com/watch?v=, youtu.be/, youtube.com/embed/
+ */
+export function getYouTubeId(url?: string | null): string | null {
+  if (!url) return null;
+  // youtube.com/watch?v=VIDEO_ID
+  let match = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+  if (match) return match[1];
+  // youtu.be/VIDEO_ID
+  match = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+  if (match) return match[1];
+  // youtube.com/embed/VIDEO_ID
+  match = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+  if (match) return match[1];
+  return null;
+}
+
+/**
+ * Check if a URL is a YouTube video
+ */
+export function isYouTubeUrl(url?: string | null): boolean {
+  return getYouTubeId(url) !== null;
+}
+
+/**
+ * Resolve full URL for media assets (images, uploads, etc.)
+ * Converts Google Drive sharing links to proxied streaming URLs.
+ *
+ * Google Drive direct-download links cannot be used as <video> sources:
+ * Drive serves them with `Content-Disposition: attachment`, which Chrome
+ * blocks with net::ERR_BLOCKED_BY_ORB (Opaque Response Blocking). The
+ * backend proxies the file and re-serves it as inline video/mp4.
+ */
+export function getMediaUrl(url?: string | null): string {
+  if (!url) return "";
+  if (url.startsWith("/media/")) return `${API_URL}${url}`;
+  // Bare Django media paths stored in the DB (e.g. "team/x.png", "gallery/y.jpg") —
+  // must be qualified with the API origin or next/image throws "Invalid URL".
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(url) && !url.startsWith("/")) {
+    return `${API_URL}/media/${url}`;
+  }
+  if (url.startsWith("/")) return url;
+
+  // Route Google Drive video/file links through our backend proxy
+  if (url.includes("drive.google.com") || url.includes("drive.usercontent.google.com")) {
+    const fileId = getGoogleDriveFileId(url);
+    if (fileId) {
+      return `${API_URL}/api/v1/media/drive-video/${fileId}`;
+    }
+  }
+
+  return url;
+}
+
+/**
+ * Returns true if the URL is served by the Django Drive proxy.
+ *
+ * Drive proxy responses are already compressed JPEGs/PNGs — routing them
+ * through the Next.js image optimizer causes double re-encoding (slow, no
+ * quality gain). Pass `unoptimized={isDriveProxyUrl(src)}` to `<Image>` so
+ * the browser fetches the proxy URL directly without optimization overhead.
+ */
+export function isDriveProxyUrl(url?: string | null): boolean {
+  if (!url) return false;
+  return url.includes("/api/v1/media/drive-video/");
+}
+
+
+/**
+ * Abort a server-side fetch if the backend doesn't answer in time.
+ *
+ * Without this, a wedged backend (process alive but not serving) makes every
+ * server-rendered page hang until Next's fetch gives up — the whole site
+ * appears frozen instead of rendering with fallback content.
+ */
+const API_TIMEOUT_MS = 5000;
+
+async function fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(`${API_URL}/api/v1${endpoint}`, {
+    ...options,
+    signal: AbortSignal.timeout(API_TIMEOUT_MS),
+    headers: {
+      "Content-Type": "application/json",
+      ...(options?.headers || {}),
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`API ${endpoint} → ${res.status}`);
+  }
+
+  return (await res.json()) as T;
+}
+
+/**
+ * Fetch from backend API with graceful fallback on failure (network error,
+ * timeout, or non-2xx status).
  */
 async function fetchWithFallback<T>(endpoint: string, fallback: T, options?: RequestInit): Promise<T> {
   try {
-    const res = await fetch(`${API_URL}/api/v1${endpoint}`, {
-      next: { revalidate: 0 },
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...(options?.headers || {}),
-      },
-    });
-
-    if (!res.ok) {
-      console.warn(`[API] ${endpoint} → ${res.status}. Using fallback.`);
-      return fallback;
-    }
-
-    return (await res.json()) as T;
+    return await fetchJson<T>(endpoint, options);
   } catch (err) {
-    console.warn(`[API] Network error: ${endpoint}`, (err as Error).message);
+    if ((err as Error).name === "TimeoutError") {
+      console.warn(`[API] ${endpoint} timed out after ${API_TIMEOUT_MS}ms. Using fallback.`);
+    } else {
+      console.warn(`[API] ${endpoint} failed: ${(err as Error).message}. Using fallback.`);
+    }
     return fallback;
   }
 }

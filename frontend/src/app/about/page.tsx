@@ -5,8 +5,7 @@ import { getTeam, getTrustStats, getArticles } from "@/lib/api";
 import { AboutClient } from "./AboutClient";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "About Us | Our Story & Expertise",

@@ -1,7 +1,18 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.core.cache import cache
 from unfold.admin import ModelAdmin
 from .models import HeroContent, TrustedBrand, TeamMember, CultureGallery, Testimonial, TrustStat
+
+def _clear_api_cache():
+    """Clear all cached API responses across all routers."""
+    cache.delete_many([
+        'hero_content_active', 'hero_slides_active',
+        'brands_active', 'team_active', 'gallery_active',
+        'testimonials_all', 'trust_stats_all',
+        'services_list', 'services_categorized',
+    ])
+
 
 @admin.register(HeroContent)
 class HeroContentAdmin(ModelAdmin):
@@ -42,16 +53,42 @@ class CultureGalleryAdmin(ModelAdmin):
         if obj.photo:
             return format_html(
                 '<img src="{}" style="height:60px;width:80px;object-fit:cover;border-radius:6px;" />',
-                obj.photo.url
+                obj.photo
             )
         return "—"
     photo_preview.short_description = "Preview"
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        _clear_api_cache()
+
+    def delete_model(self, request, obj):
+        super().delete_model(request, obj)
+        _clear_api_cache()
+
+    def delete_queryset(self, request, queryset):
+        super().delete_queryset(request, queryset)
+        _clear_api_cache()
+
 
 @admin.register(Testimonial)
 class TestimonialAdmin(ModelAdmin):
     list_display = ('author', 'company', 'role', 'metric', 'order')
     list_editable = ('order',)
     search_fields = ('author', 'company', 'quote')
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        _clear_api_cache()
+
+    def delete_model(self, request, obj):
+        super().delete_model(request, obj)
+        _clear_api_cache()
+
+    def delete_queryset(self, request, queryset):
+        super().delete_queryset(request, queryset)
+        _clear_api_cache()
+
 
 @admin.register(TrustStat)
 class TrustStatAdmin(ModelAdmin):

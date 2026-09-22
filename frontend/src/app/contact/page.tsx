@@ -1,5 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
+import { Navbar } from "@/components/navbar/Navbar";
+import { Footer } from "@/components/footer/Footer";
 import { ContactClient } from "./ContactClient";
 
 export const metadata: Metadata = {
@@ -9,5 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default function ContactPage() {
-  return <ContactClient />;
+  return (
+    <ContactClient>
+      <Footer />
+    </ContactClient>
+  );
 }

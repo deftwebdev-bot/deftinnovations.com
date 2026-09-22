@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { MediaImage as Image } from "@/components/ui/MediaImage";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/navbar/Navbar";
 import { Footer } from "@/components/footer/Footer";
@@ -10,8 +10,7 @@ import { CtaSection } from "@/components/home/CtaSection";
 import { ArrowRight, ArrowUpRight, CheckCircle2, Layers, Zap, BarChart3 } from "lucide-react";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 export async function generateMetadata({
   params,
@@ -49,11 +48,12 @@ export default async function ServiceDetailPage({
         {/* Hero — dark with background image */}
         <section className="relative min-h-[45vh] flex items-end overflow-hidden">
           <Image
-            src="https://images.unsplash.com/photo-1557683316-973673baf926?w=900&auto=format&fit=crop&q=60"
+            src="https://images.unsplash.com/photo-1557683316-973673baf926?w=2400&auto=format&fit=crop&q=80"
             alt="Abstract gradient background"
             fill
             className="object-cover"
             priority
+            sizes="100vw"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
 
@@ -116,12 +116,13 @@ export default async function ServiceDetailPage({
 
               <div className={`lg:col-span-7 flex items-center justify-center`}>
                 {(service.imageUrl || service.categoryImageUrl) ? (
-                  <div className="relative w-full aspect-[16/10] overflow-hidden bg-neutral-100 border border-black/[0.06]">
+                  <div className="relative w-full max-h-[75vh] flex items-center justify-center bg-neutral-50 border border-black/[0.06] overflow-hidden">
                     <Image
                       src={getMediaUrl(service.imageUrl || service.categoryImageUrl)}
                       alt={service.title}
-                      fill
-                      className="object-cover"
+                      width={1200}
+                      height={800}
+                      className="w-full h-auto max-h-[75vh] object-contain"
                       sizes="(max-width: 1024px) 100vw, 58vw"
                       priority
                     />
