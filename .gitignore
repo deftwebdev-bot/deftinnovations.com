@@ -57,3 +57,7 @@ pnpm-debug.log*
 .vercel
 *.tsbuildinfo
 next-env.d.ts
+
+.freebuff/
+AGENTS.md
+.gitignore
